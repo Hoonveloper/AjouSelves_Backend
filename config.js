@@ -11,24 +11,23 @@ module.exports = {
         ,{file:'./post_schema', collection:'post', schemaName:'PostSchema', modelName:'PostModel'}
 	],
 	route_info: [
-        {file:'./post', path:'/process/addpost', method:'addpost', type:'post'}
-        ,{file:'./post', path:'/process/showpost/:id', method:'showpost', type:'get'}
-        ,{file:'./post', path:'/process/listpost', method:'listpost', type:'post'}
-        ,{file:'./post', path:'/process/listpost', method:'listpost', type:'get'}
+        {file:'./user', path:'/user/add', method:'adduser', type:'post'}
+        ,{file:'./user', path:'/user/get/:id', method:'getuser', type:'get'}
+        ,{file:'./user', path:'/user/edit/', method:'edituser', type:'post'}
+        ,{file:'./user', path:'/user/delete/:id', method:'deluser', type:'get'}
+		,{file:'./proj', path:'/proj/get/', method:'listproj', type:'get'}
+		,{file:'./proj', path:'/proj/get/:id', method:'listproj', type:'get'}
+		,{file:'./proj', path:'/proj/add', method:'addproj', type:'post'}
+		,{file:'./proj', path:'/proj/edit/', method:'editproj', type:'post'}
+		,{file:'./proj', path:'/proj/delete/:id', method:'delproj', type:'get'}
+		,{file:'./post', path:'/post/get', method:'listpost', type:'get'}
+		,{file:'./post', path:'/post/get/:id', method:'listpost', type:'get'}
+		,{file:'./post', path:'/post/add', method:'addpost', type:'post'}
+		,{file:'./post', path:'/post/edit', method:'editpost', type:'post'}
+		,{file:'./post', path:'/post/delete/:id', method:'delpost', type:'get'}
+		,{file:'./login', path:'/login/kakao', method:'kakao', type:'get'}
+		,{file:'./login', path:'/login/local', method:'local', type:'get'}
+		,{file:'./logout', path:'/logout', method:'logout', type:'get'}
+		
 	],
-	facebook: {		// passport facebook
-		clientID: '1442860336022433',
-		clientSecret: '13a40d84eb35f9f071b8f09de10ee734',
-		callbackURL: 'http://localhost:3000/auth/facebook/callback'
-	},
-	twitter: {		// passport twitter
-		clientID: 'id',
-		clientSecret: 'secret',
-		callbackURL: '/auth/twitter/callback'
-	},
-	google: {		// passport google
-		clientID: 'id',
-		clientSecret: 'secret',
-		callbackURL: '/auth/google/callback'
-	}
 }
