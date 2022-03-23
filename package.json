@@ -18,6 +18,8 @@
     "html-entities": "^1.2.0",
     "mariadb": "^3.0.0",
     "mongoose": "^4.6.6",
+    "mysql": "^2.18.1",
+    "nodemon": "^2.0.15",
     "passport": "^0.3.2",
     "passport-facebook": "^2.1.1",
     "passport-google-oauth": "^1.0.0",

@@ -3,10 +3,6 @@ var adduser = function (req,res) {
     //회원가입 했을때 db에 정보 저장하는 페이지
 
 }
-
-
-
-    
 var getuser= function (req,res){
 
     //mypage 들어갔을떄 정보 가져오는 코드

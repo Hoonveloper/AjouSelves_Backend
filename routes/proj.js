@@ -1,7 +1,8 @@
-var searchproj = function(req,res){
+var searchprojbytitle= function(req,res){
   //SELECT * FROM proj WHERE title = req.asdf 이런식으로 제목으로 검색
 
 }
+
 
 var getproj= function(req,res){
  //특정한 project 정보 가져오는 코드

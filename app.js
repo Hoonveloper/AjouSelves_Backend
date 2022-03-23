@@ -33,7 +33,7 @@ var database = require('./database/maria');
 var route_loader = require('./routes/route_loader.js');
 
 
-database.createConnection()
+
 
 // 익스프레스 객체 생성
 var app = express();
@@ -85,12 +85,12 @@ route_loader.init(app, router);
 
 
 // 패스포트 설정
-var configPassport = require('./config/passport');
-configPassport(app, passport);
+//var configPassport = require('./config/passport');
+//configPassport(app, passport);
 
 // 패스포트 라우팅 설정
-var userPassport = require('./routes/user_passport');
-userPassport(router, passport);
+//var userPassport = require('./routes/user_passport');
+//userPassport(router, passport);
 
 
 
