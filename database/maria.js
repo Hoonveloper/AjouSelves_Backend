@@ -1,4 +1,4 @@
-const maria = require('mysql');
+const maria = require('mysql2/promise');
 
 
 
@@ -10,10 +10,10 @@ console.log("init() 호출");
 }
 
 
-function connect(app,config){
+async function connect(app,config){
     console.log("connect() 호출");
 
-    var db= maria.createConnection({
+    var db= await maria.createConnection({
         host:config.db_host,
         port:config.db_port,
         user:config.db_user,
@@ -21,9 +21,7 @@ function connect(app,config){
         database:config.db_name
 
     })
-    db.connect();
-    database.db=db;
-
+    database.db = db;
     app.set('database',database);
 }
 

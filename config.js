@@ -1,4 +1,5 @@
 
+
 /*
  * 설정
  */
@@ -20,17 +21,19 @@ module.exports = {
         // ,{file:'./user', path:'/user/get/:id', method:'getuser', type:'get'}
         // ,{file:'./user', path:'/user/edit/', method:'edituser', type:'post'}
         // ,{file:'./user', path:'/user/delete/:id', method:'deluser', type:'get'}
-		// ,{file:'./proj', path:'/proj/get/', method:'listproj', type:'get'}
-		// ,{file:'./proj', path:'/proj/get/:id', method:'listproj', type:'get'}
-		// ,{file:'./proj', path:'/proj/add', method:'addproj', type:'post'}
-		// ,{file:'./proj', path:'/proj/edit/', method:'editproj', type:'post'}
-		// ,{file:'./proj', path:'/proj/delete/:id', method:'delproj', type:'get'}
-		{file:'./post', path:'/post/getall', method:'getALLpost', type:'get'}
+		{file:'./proj', path:'/proj/getall/', method:'getALLproj', type:'get'}
+	   	,{file:'./proj', path:'/proj/get/:id', method:'getproj', type:'get'}
+	    ,{file:'./proj', path:'/proj/add', method:'addproj', type:'post'}
+		,{file:'./proj', path:'/proj/edit/:id', method:'editproj', type:'put'}
+		,{file:'./proj', path:'/proj/delete/:id', method:'delproj', type:'delete'}
+		,{file:'./proj', path:'/proj/search', method:'searchprojbytitle', type:'post'}
+		,{file:'./post', path:'/post/getall', method:'getALLpost', type:'get'}
 		,{file:'./post', path:'/post/get/:id', method:'getpost', type:'get'}
 		,{file:'./post', path:'/post/add', method:'addpost', type:'post'}
 		,{file:'./post', path:'/post/edit/:id', method:'editpost', type:'put'}
 		,{file:'./post', path:'/post/delete/:id', method:'delpost', type:'delete'}
-		,{file:'./post', path:'/post/search', method:'searchByTitle', type:'post'}
+		,{file:'./post', path:'/post/search', method:'searchpostbytitle', type:'post'}
+
 		// ,{file:'./login', path:'/login/kakao', method:'kakao', type:'get'}
 		// ,{file:'./login', path:'/login/local', method:'local', type:'get'}
 		// ,{file:'./logout', path:'/logout', method:'logout', type:'get'}
