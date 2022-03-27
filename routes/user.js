@@ -30,11 +30,12 @@ router.post('/add', (req,res) => {
    //console.log("User add");
 })
 
+// id 정보를 통해 db에서 정보 가져오기
 router.get('/get/:id', (req,res) => {
     const number = req.params.id;
-    DB.query('SELECT *FROM USER', (err,result,fileds)=>{
-        if(err) alert("DB Get Error");
-        res.json(result[number]);    
+    DB.query(`select *from user where email=?`,number,(err,result,fileds)=>{
+        if(err) console.log("DB Get Error");
+        res.send(result);    
     })
 })
 
