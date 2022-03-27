@@ -3,15 +3,19 @@ const router = express.Router();
 const DB = require('../database/db_info'); // DB 정보 가져오기
 DB.connect();
 const usertag = 'INSERT INTO USER (userid, password, email, status, nickname, socialtype, sex, birth, address, account, create_at, profileLink) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)';
-const temp = [3, 'abc', '1231231@asdf.com', '외부', 'john', '', 1, '1999-06-04', '청주', '3333', '2020-03-04', ''];
 
+//body-parser
+router.use(express.urlencoded({extended:true}));
+router.use(express.json());
 
+// 형식에 맞게 json 파일로 넘겨주면 이를 user db에 넣어준다.
 router.post('/add', (req,res) => {
-    //const obj = JSON.parse(req.body);
-    DB.query(usertag,temp, (err,result,fileds) => {
+    const rebo = req.body;
+    const reqvalue = [rebo.userid, rebo.password, rebo.email, rebo.status, rebo.nickname, rebo.socialtype, rebo.sex, rebo.birth, rebo.address, rebo.account, rebo.create_at, rebo.profileLink];
+    DB.query(usertag,reqvalue, (err,result,fileds) => {
         if(err) console.log(err);
-        res.send(result);
-        console.log(result);
+        console.log("add success");
+        res.send(req.body);
     })
    console.log("User add");
 })
@@ -21,6 +25,14 @@ router.get('/get/:id', (req,res) => {
     DB.query('SELECT *FROM USER', (err,result,fileds)=>{
         if(err) alert("DB Get Error");
         res.send(result[number]);    
+    })
+})
+
+router.get('/get/', (req,res) => {
+    const number = req.params.id;
+    DB.query('SELECT *FROM USER', (err,result,fileds)=>{
+        if(err) alert("DB Get Error");
+        res.send(result);    
     })
 })
 
