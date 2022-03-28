@@ -34,7 +34,9 @@ var route_loader = require('./routes/route_loader.js');
 
 
 
-
+var post = require("./routes/post");
+var proj = require("./routes/proj");
+var user = require("./routes/user");
 // 익스프레스 객체 생성
 var app = express();
 
@@ -47,7 +49,7 @@ console.log('뷰 엔진이 ejs로 설정되었습니다.');
 
 //===== 서버 변수 설정 및 static으로 public 폴더 설정  =====//
 console.log('config.server_port : %d', config.server_port);
-app.set('port', process.env.PORT || 3000);
+app.set('port', config.server_port || 3000);
  
 
 // body-parser를 이용해 application/x-www-form-urlencoded 파싱
@@ -69,6 +71,11 @@ app.use(expressSession({
 	saveUninitialized:true
 }));
 
+app.use("/post",post);
+app.use("/proj",proj);
+app.use("/user", user);
+
+
 
 
 //===== Passport 사용 설정 =====//
@@ -82,7 +89,6 @@ app.use(flash());
 
 //라우팅 정보를 읽어들여 라우팅 설정
 var router = express.Router();
-route_loader.init(app, router);
 
 
 // 패스포트 설정
@@ -134,6 +140,6 @@ var server = http.createServer(app).listen(app.get('port'), function(){
 	console.log('서버가 시작되었습니다. 포트 : ' + app.get('port'));
 
 	// 데이터베이스 초기화
-	database.init(app, config);
+	//database.init(app, config);
    
 });

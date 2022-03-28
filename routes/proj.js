@@ -1,3 +1,38 @@
+const express = require('express');
+const router =express.Router();
+const jwt = require('jsonwebtoken');
+const DB= require('../database/maria');
+DB.connect();
+
+const jwtMiddleware=(req,res,next)=> {
+    const token = req.header.token;
+    try {
+        const decode = jwt.verify(token,"SEC") // thopw
+        if(decode) {
+            req.user = decode;
+            next();
+        }
+        else {
+            res.json({
+                status:"fail",
+                msg:"유효하지 않은 토큰, 로그인 안했다"
+            })
+        }
+    }
+    catch(e) {
+        res.json({
+            status:"fail",
+            msg:"유효기간 만료"
+        })
+    }
+};
+
+
+
+router.use(jwtMiddleware);
+
+
+
 var searchprojbytitle= async function(req,res){
   //SELECT * FROM proj WHERE title = req.asdf 이런식으로 제목으로 검색
   const title =req.body.title;
@@ -137,9 +172,11 @@ try{
    
 }
 
-module.exports.searchprojbytitle=searchprojbytitle;
-module.exports.getproj=getproj;
-module.exports.getALLproj=getALLproj;
-module.exports.addproj=addproj;
-module.exports.editproj=editproj;
-module.exports.delproj=delproj;
+router.post("/searchbytitle",searchprojbytitle);
+router.get("/getall",getALLproj);
+router.get("/get/:id",getproj);
+router.put("/edit/:id",editproj);
+router.delete("/delete/:id",delproj);
+router.post("/add",addproj);
+
+module.exports = router;

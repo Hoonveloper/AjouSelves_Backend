@@ -1,7 +1,34 @@
-const { response } = require('express');
+const express = require('express');
+const router =express.Router();
+const jwt = require('jsonwebtoken');
+const DB= require('../database/maria');
+DB.connect();
 
 
+const jwtMiddleware=(req,res,next)=> {
+    const token = req.header.token;
+    try {
+        const decode = jwt.verify(token,"SEC") // thopw
+        if(decode) {
+            req.user = decode;
+            next();
+        }
+        else {
+            res.json({
+                status:"fail",
+                msg:"유효하지 않은 토큰, 로그인 안했다"
+            })
+        }
+    }
+    catch(e) {
+        res.json({
+            status:"fail",
+            msg:"유효기간 만료"
+        })
+    }
+};
 
+router.use(jwtMiddleware);
 var searchpostbytitle = async function(req,res){
     //검색을 통해 db에서 제목으로 검색
     //SELECT * FROM POSTS WHERE title = req.asdf 이런식으로 제목으로 검색
@@ -123,9 +150,10 @@ var delpost = async function(req,res){
     }
 }
 
-module.exports.searchpostbytitle=searchpostbytitle;
-module.exports.getpost=getpost;
-module.exports.getALLpost=getALLpost;
-module.exports.addpost=addpost;
-module.exports.editpost=editpost;
-module.exports.delpost=delpost;
+router.post("/searchbytitle",searchpostbytitle);
+router.get("/getall",getALLpost);
+router.get("/get/:id",getpost);
+router.put("/edit/:id",editpost);
+router.delete("/delete/:id",delpost);
+router.post("/add",addpost);
+module.exports = router;
