@@ -39,7 +39,7 @@ var searchprojbytitle= async function(req,res){
   console.log(title);
   const db=req.app.get('database');
   try{
-      const [data] = await db.db.query(`SELECT p.projID,p.title,p.state,p.category,p.min_num, p.created_at, u.NICKNAME FROM proj AS p JOIN user as u ON p.userID=u.userid where p.title LIKE '%${title}%';`);
+      const [data] = await db.db.query(`SELECT p.projID,p.title,p.state,p.category,p.min_num, p.created_at, u.NICKNAME FROM projs AS p JOIN users as u ON p.userid=u.userid where p.title LIKE '%${title}%';`);
       console.log(data);
       res.json(data);
   }catch{
@@ -56,7 +56,7 @@ var getproj= async function(req,res){
   const id = req.params.id;
   const db=req.app.get('database'); 
   try{
-      const [proj]= await db.db.query(`SELECT * FROM proj AS p JOIN user AS u ON p.userID=u.userID WHERE p.projID=${id};`);
+      const [proj]= await db.db.query(`SELECT * FROM projs AS p JOIN users AS u ON p.userid=u.userid WHERE p.projid=${id};`);
       proj.comments=new Array();
       const [comments]= await db.db.query(`SELECT * FROM comments WHERE projid=${id}`);
       comments.map((e)=> {
@@ -87,7 +87,7 @@ const db=req.app.get('database');
 
 
 try{
-    const [data] = await db.db.query(`SELECT p.projID,p.title, p.state,p.category, p.created_at, u.userid, u.NICKNAME ,p.min_num FROM proj as p join user as u ON p.userID=u.userid ORDER BY created_at DESC`);
+    const [data] = await db.db.query(`SELECT p.projID,p.title, p.state,p.category, p.created_at, u.userid, u.NICKNAME ,p.min_num FROM projs as p join users as u ON p.userid=u.userid ORDER BY created_at DESC`);
     console.log(data);
     res.json(data);
 
@@ -117,7 +117,7 @@ required=req.body.required;
 required = JSON.stringify(required).replace(/[\']/g,/[\"]/g );
 
 try{
-    const data=await db.db.query(`INSERT INTO proj(userID,title,category,min_num,explained,required) VALUES(${userid},'${title}','${category}',${min_num},'${explained}','${required}' )`);
+    const data=await db.db.query(`INSERT INTO projs(userid,title,category,min_num,explained,required) VALUES(${userid},'${title}','${category}',${min_num},'${explained}','${required}' )`);
     console.log(data);
     res.json({status:"success"});
 
@@ -143,7 +143,7 @@ var editproj= async function(req,res){
   required = JSON.stringify(required).replace(/[\']/g,/[\"]/g );
  
   try{
-      const data= await db.db.query(`UPDATE proj SET title='${title}', explained='${explained}',min_num='${min_num}',category='${category}',required='${required}'  WHERE projId=${projid};`);
+      const data= await db.db.query(`UPDATE projs SET title='${title}', explained='${explained}',min_num='${min_num}',category='${category}',required='${required}'  WHERE projid=${projid};`);
       res.json({text:"success"});
 
   }catch{
@@ -162,7 +162,7 @@ var delproj = async function(req,res){
 const db=req.app.get('database');
 const projid = req.params.id;
 try{
-    const data =await db.db.query(`DELETE FROM proj WHERE projID=${projid};`);
+    const data =await db.db.query(`DELETE FROM projs WHERE projid=${projid};`);
     console.log(data);
     res.json({text:"success"});
 }catch{

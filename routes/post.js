@@ -36,7 +36,7 @@ var searchpostbytitle = async function(req,res){
     console.log(title);
     const db=req.app.get('database');
     try{
-        const [data] = await db.db.query(`SELECT p.postID,p.title, p.explained, p.created_at, u.NICKNAME FROM post AS p JOIN user as u ON p.userID=u.userid where title LIKE '%${title}%';`);
+        const [data] = await db.db.query(`SELECT p.postID,p.title, p.explained, p.created_at, u.NICKNAME FROM posts AS p JOIN users as u ON p.userid=u.userid where title LIKE '%${title}%';`);
         console.log(data);
         res.json(data);
     }catch{
@@ -54,7 +54,7 @@ var getpost= async function(req,res){
 
     const db=req.app.get('database'); 
     try{
-        const [post]= await db.db.query(`SELECT p.postID, u.NICKNAME, p.title,p.explained, p.created_at FROM post AS p JOIN user AS u ON p.userID=u.userID WHERE p.postID=${id};`);
+        const [post]= await db.db.query(`SELECT p.postID, u.NICKNAME, p.title,p.explained, p.created_at FROM posts AS p JOIN users AS u ON p.userID=u.userid WHERE p.postid=${id};`);
         post.comments=new Array();
         const [comments]= await db.db.query(`SELECT * FROM comments WHERE postid=${id}`);
         comments.map((e)=> {
@@ -85,7 +85,7 @@ var getALLpost= async function(req,res){
 
     const db=req.app.get('database');
     try{
-        const [data] = await db.db.query(`SELECT p.title, p.explained, p.created_at, u.userid, u.NICKNAME FROM post as p join user as u ON p.userID=u.userid ORDER BY created_at DESC`);
+        const [data] = await db.db.query(`SELECT p.title, p.explained, p.created_at, u.userid, u.NICKNAME FROM posts as p join users as u ON p.userid=u.userid ORDER BY created_at DESC`);
         console.log(data);
         res.json(data);
 
@@ -106,7 +106,7 @@ var addpost= async function(req,res){
     const explained= req.body.explained;
     console.log(req.body);
     try{
-        const data=await db.db.query(`INSERT INTO post(userID,title,explained) VALUES(${userid},'${title}','${explained}')`);
+        const data=await db.db.query(`INSERT INTO posts(userid,title,explained) VALUES(${userid},'${title}','${explained}')`);
         res.json({status:"success"});
 
     }catch{
@@ -125,7 +125,7 @@ var editpost= async function(req,res){
     const explained= req.body.explained;
     console.log(req.body);
     try{
-        const data= await db.db.query(`UPDATE post SET title='${title}', explained='${explained}' WHERE postId=${postid};`);
+        const data= await db.db.query(`UPDATE posts SET title='${title}', explained='${explained}' WHERE postid=${postid};`);
         res.json({text:"success"});
 
     }catch{
@@ -141,7 +141,7 @@ var delpost = async function(req,res){
     const db=req.app.get('database');
     const postid = req.params.id;
     try{
-        const data =await db.db.query(`DELETE FROM post WHERE postID=${postid};`);
+        const data =await db.db.query(`DELETE FROM posts WHERE postid=${postid};`);
         console.log(data);
         res.json({text:"success"});
     }catch{

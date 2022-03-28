@@ -1,4 +1,4 @@
-const maria = require('mysql2/promise');
+const maria = require('mysql2');
 const config = require('../config');
 
 
@@ -11,6 +11,7 @@ const DBconnection= maria.createConnection({
         database:config.db_name
 
 });
+console.log("done");
     
 
 
