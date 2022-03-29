@@ -1,8 +1,8 @@
 const express = require('express');
 const router =express.Router();
 const jwt = require('jsonwebtoken');
-const DB= require('../database/maria');
-DB.connect();
+const db= require('../database/maria');
+db.connect();
 
 
 const jwtMiddleware=(req,res,next)=> {
@@ -28,15 +28,15 @@ const jwtMiddleware=(req,res,next)=> {
     }
 };
 
-router.use(jwtMiddleware);
+//router.use(jwtMiddleware);
 var searchpostbytitle = async function(req,res){
     //검색을 통해 db에서 제목으로 검색
     //SELECT * FROM POSTS WHERE title = req.asdf 이런식으로 제목으로 검색
     const title =req.body.title;
     console.log(title);
-    const db=req.app.get('database');
+ 
     try{
-        const [data] = await db.db.query(`SELECT p.postID,p.title, p.explained, p.created_at, u.NICKNAME FROM posts AS p JOIN users as u ON p.userid=u.userid where title LIKE '%${title}%';`);
+        const [data] = await db.promise().query(`SELECT p.postID,p.title, p.explained, p.created_at, u.NICKNAME FROM posts AS p JOIN users as u ON p.userid=u.userid where title LIKE '%${title}%';`);
         console.log(data);
         res.json(data);
     }catch{
@@ -51,12 +51,10 @@ var getpost= async function(req,res){
 
     */
     const id = req.params.id;
-
-    const db=req.app.get('database'); 
     try{
-        const [post]= await db.db.query(`SELECT p.postID, u.NICKNAME, p.title,p.explained, p.created_at FROM posts AS p JOIN users AS u ON p.userID=u.userid WHERE p.postid=${id};`);
+        const [post]= await db.promise().query(`SELECT p.postID, u.NICKNAME, p.title,p.explained, p.created_at FROM posts AS p JOIN users AS u ON p.userID=u.userid WHERE p.postid=${id};`);
         post.comments=new Array();
-        const [comments]= await db.db.query(`SELECT * FROM comments WHERE postid=${id}`);
+        const [comments]= await db.promise().query(`SELECT * FROM comments WHERE postid=${id}`);
         comments.map((e)=> {
             var temp= new Object();
             temp.postid=e.postid;
@@ -83,9 +81,8 @@ var getALLpost= async function(req,res){
     SELECT * FROM posts ORDER BY created_ at (desc) -> 오래된순
     */
 
-    const db=req.app.get('database');
     try{
-        const [data] = await db.db.query(`SELECT p.title, p.explained, p.created_at, u.userid, u.NICKNAME FROM posts as p join users as u ON p.userid=u.userid ORDER BY created_at DESC`);
+        const [data] = await db.promise().query(`SELECT p.title, p.explained, p.created_at, u.userid, u.NICKNAME FROM posts as p join users as u ON p.userid=u.userid ORDER BY created_at DESC`);
         console.log(data);
         res.json(data);
 
@@ -100,13 +97,13 @@ var getALLpost= async function(req,res){
 var addpost= async function(req,res){
  //INSERT INTO posts() VALUES()...
 //project 정보 db에 저장하는코드
-    const db=req.app.get('database');
+
     const userid=req.body.userid;
     const title= req.body.title;
     const explained= req.body.explained;
     console.log(req.body);
     try{
-        const data=await db.db.query(`INSERT INTO posts(userid,title,explained) VALUES(${userid},'${title}','${explained}')`);
+        const data=await db.promise().query(`INSERT INTO posts(userid,title,explained) VALUES(${userid},'${title}','${explained}')`);
         res.json({status:"success"});
 
     }catch{
@@ -119,14 +116,14 @@ var addpost= async function(req,res){
 
 
 var editpost= async function(req,res){
-    const db=req.app.get('database');
+
     const postid = req.params.id;
     const title= req.body.title;
     const explained= req.body.explained;
     console.log(req.body);
     try{
-        const data= await db.db.query(`UPDATE posts SET title='${title}', explained='${explained}' WHERE postid=${postid};`);
-        res.json({text:"success"});
+        const data= await db.promise().query(`UPDATE posts SET title='${title}', explained='${explained}' WHERE postid=${postid};`);
+        res.json({status:"success"});
 
     }catch{
         console.log('editpost에서 error 발생!');
@@ -138,12 +135,11 @@ var editpost= async function(req,res){
 }
 
 var delpost = async function(req,res){
-    const db=req.app.get('database');
     const postid = req.params.id;
     try{
-        const data =await db.db.query(`DELETE FROM posts WHERE postid=${postid};`);
+        const data =await db.promise().query(`DELETE FROM posts WHERE postid=${postid};`);
         console.log(data);
-        res.json({text:"success"});
+        res.json({status:"success"});
     }catch{
         console.log('editpost에서 error 발생!');
         res.status(400).json({ text: 'ErrorCode:400, 잘못된 요청입니다.' });
@@ -151,8 +147,8 @@ var delpost = async function(req,res){
 }
 
 router.post("/searchbytitle",searchpostbytitle);
-router.get("/getall",getALLpost);
-router.get("/get/:id",getpost);
+router.get("/all",getALLpost);
+router.get("/:id",getpost);
 router.put("/edit/:id",editpost);
 router.delete("/delete/:id",delpost);
 router.post("/add",addpost);
