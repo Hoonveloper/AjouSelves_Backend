@@ -1,8 +1,8 @@
 const express = require('express');
 const router =express.Router();
 const jwt = require('jsonwebtoken');
-const DB= require('../database/maria');
-DB.connect();
+const db= require('../database/maria');
+db.connect();
 
 const jwtMiddleware=(req,res,next)=> {
     const token = req.header.token;
@@ -29,7 +29,7 @@ const jwtMiddleware=(req,res,next)=> {
 
 
 
-router.use(jwtMiddleware);
+//router.use(jwtMiddleware);
 
 
 
@@ -37,9 +37,9 @@ var searchprojbytitle= async function(req,res){
   //SELECT * FROM proj WHERE title = req.asdf 이런식으로 제목으로 검색
   const title =req.body.title;
   console.log(title);
-  const db=req.app.get('database');
+
   try{
-      const [data] = await db.db.query(`SELECT p.projID,p.title,p.state,p.category,p.min_num, p.created_at, u.NICKNAME FROM projs AS p JOIN users as u ON p.userid=u.userid where p.title LIKE '%${title}%';`);
+      const [data] = await db.promise().query(`SELECT p.projID,p.title,p.state,p.category,p.min_num, p.created_at, u.NICKNAME FROM projs AS p JOIN users as u ON p.userid=u.userid where p.title LIKE '%${title}%';`);
       console.log(data);
       res.json(data);
   }catch{
@@ -54,11 +54,11 @@ var searchprojbytitle= async function(req,res){
 var getproj= async function(req,res){
  //특정한 project 정보 가져오는 코드
   const id = req.params.id;
-  const db=req.app.get('database'); 
+  
   try{
-      const [proj]= await db.db.query(`SELECT * FROM projs AS p JOIN users AS u ON p.userid=u.userid WHERE p.projid=${id};`);
+      const [proj]= await db.promise().query(`SELECT * FROM projs AS p JOIN users AS u ON p.userid=u.userid WHERE p.projid=${id};`);
       proj.comments=new Array();
-      const [comments]= await db.db.query(`SELECT * FROM comments WHERE projid=${id}`);
+      const [comments]= await db.promise().query(`SELECT * FROM comments WHERE projid=${id}`);
       comments.map((e)=> {
           var temp= new Object();
           temp.projid=e.projid;
@@ -82,12 +82,8 @@ var getproj= async function(req,res){
 
 var getALLproj= async function(req,res){
 //모든 project 정보 가져오는 코드
-
-const db=req.app.get('database');
-
-
 try{
-    const [data] = await db.db.query(`SELECT p.projID,p.title, p.state,p.category, p.created_at, u.userid, u.NICKNAME ,p.min_num FROM projs as p join users as u ON p.userid=u.userid ORDER BY created_at DESC`);
+    const [data] = await db.promise().query(`SELECT p.projID,p.title, p.state,p.category, p.created_at, u.userid, u.NICKNAME ,p.min_num FROM projs as p join users as u ON p.userid=u.userid ORDER BY created_at DESC`);
     console.log(data);
     res.json(data);
 
@@ -105,7 +101,6 @@ var addproj= async function(req,res){
 //project 정보 db에 저장하는코드
 
 
-const db=req.app.get('database');
 const userid=req.body.userid;
 const title= req.body.title;
 const explained= req.body.explained;
@@ -117,7 +112,7 @@ required=req.body.required;
 required = JSON.stringify(required).replace(/[\']/g,/[\"]/g );
 
 try{
-    const data=await db.db.query(`INSERT INTO projs(userid,title,category,min_num,explained,required) VALUES(${userid},'${title}','${category}',${min_num},'${explained}','${required}' )`);
+    const data=await db.promise().query(`INSERT INTO projs(userid,title,category,min_num,explained,required) VALUES(${userid},'${title}','${category}',${min_num},'${explained}','${required}' )`);
     console.log(data);
     res.json({status:"success"});
 
@@ -131,7 +126,6 @@ try{
 var editproj= async function(req,res){
 
   const projid=req.params.id;
-  const db=req.app.get('database');
   const userid=req.body.userid;
   const title= req.body.title;
   const explained= req.body.explained;
@@ -143,7 +137,7 @@ var editproj= async function(req,res){
   required = JSON.stringify(required).replace(/[\']/g,/[\"]/g );
  
   try{
-      const data= await db.db.query(`UPDATE projs SET title='${title}', explained='${explained}',min_num='${min_num}',category='${category}',required='${required}'  WHERE projid=${projid};`);
+      const data= await db.promise().query(`UPDATE projs SET title='${title}', explained='${explained}',min_num='${min_num}',category='${category}',required='${required}'  WHERE projid=${projid};`);
       res.json({text:"success"});
 
   }catch{
@@ -159,10 +153,10 @@ var editproj= async function(req,res){
 var delproj = async function(req,res){
 
 //project 정보 삭제
-const db=req.app.get('database');
+
 const projid = req.params.id;
 try{
-    const data =await db.db.query(`DELETE FROM projs WHERE projid=${projid};`);
+    const data =await db.promise().query(`DELETE FROM projs WHERE projid=${projid};`);
     console.log(data);
     res.json({text:"success"});
 }catch{
@@ -173,8 +167,8 @@ try{
 }
 
 router.post("/searchbytitle",searchprojbytitle);
-router.get("/getall",getALLproj);
-router.get("/get/:id",getproj);
+router.get("/",getALLproj);
+router.get("/:id",getproj);
 router.put("/edit/:id",editproj);
 router.delete("/delete/:id",delproj);
 router.post("/add",addproj);
