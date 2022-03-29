@@ -23,7 +23,8 @@ router.post('/add', (req,res) => {
     const reqvalue = [rebo.userid, rebo.email, password, salt, rebo.nickname, rebo.status, rebo.socialtype, rebo.sex, rebo.birth, rebo.address, rebo.account, rebo.create_at, rebo.profileLink];
     DB.query(usertag,reqvalue, (err,result,fileds) => {
         if(err) console.log(err);
-        res.send(req.body);
+        console.log(req.body);
+        res.json({status:"success"});
     })
    //console.log("User add");
 })
@@ -46,11 +47,15 @@ router.get('/get', (req,res) => {
 })
 
 router.delete('/delete/:id', (req,res) => {
-    res.send("User delete");
+    const number = req.params.id;
+    DB.query(`delete from users where userid =?`, number, (err,result,fileds) => {
+        if(err) console.log("DB Delete Error");
+        res.json({status:"success"});
+    })
 })
 
 router.put('/edit/', (req,res) => {
-    res.send("User delete");
+    res.json({status:"success"});
 })
 
 
