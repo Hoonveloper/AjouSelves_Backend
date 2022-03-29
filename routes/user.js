@@ -3,41 +3,41 @@ const router = express.Router();
 const crypto = require('crypto');
 const DB = require('../database/maria'); // DB 정보 가져오기
 DB.connect();
-const usertag = 'INSERT INTO USERS (userid, email, password, salt, nickname, status, socialtype, sex, birth, address, account, create_at, profilelink) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)';
-
 //body-parser
 router.use(express.urlencoded({extended:true}));
 router.use(express.json());
 
+// 비밀번호 암호화(crypto, salt 사용)
 function createHashedPassword(plainPassword) {
         const salt = crypto.randomBytes(64).toString('base64')
         return [crypto.pbkdf2Sync(plainPassword, salt, 9999, 64, 'sha512').toString('base64'), salt];
 }
 
-// 형식에 맞게 json 파일로 넘겨주면 이를 user db에 넣어준다.
+// 회원가입 형식에 맞는 json 파일을 받아 이를 user db에 넣어준다.
 router.post('/add', (req,res) => {
     const rebo = req.body;
-    const hasfun = createHashedPassword(rebo.password);
-    const salt = hasfun[1];
-    const password = hasfun[0];
-    const reqvalue = [rebo.userid, rebo.email, password, salt, rebo.nickname, rebo.status, rebo.socialtype, rebo.sex, rebo.birth, rebo.address, rebo.account, rebo.create_at, rebo.profileLink];
-    DB.query(usertag,reqvalue, (err,result,fileds) => {
+    const encryption = createHashedPassword(rebo.password);
+    const userquery = 'INSERT INTO USERS (userid, email, password, salt, nickname, status, socialtype, sex, birth, address, account, create_at, profilelink) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)';
+    const salt = encryption[1];
+    const password = encryption[0];
+    const uservalue = [rebo.userid, rebo.email, password, salt, rebo.nickname, rebo.status, rebo.socialtype, rebo.sex, rebo.birth, rebo.address, rebo.account, rebo.create_at, rebo.profileLink];
+    DB.query(userquery,uservalue, (err,result,fileds) => {
         if(err) console.log(err);
         console.log(req.body);
         res.json({status:"success"});
     })
-   //console.log("User add");
 })
 
-// id 정보를 통해 db에서 정보 가져오기
+// user의 고유 id를 받아 user의 정보 db에서 보내준다.
 router.get('/get/:id', (req,res) => {
-    const number = req.params.id;
-    DB.query(`select *from users where email=?`,number,(err,result,fileds)=>{
+    const userid = req.params.id;
+    DB.query(`select *from users where userid=?`,userid,(err,result,fileds)=>{
         if(err) console.log("DB Get Error");
         res.send(result);    
     })
 })
 
+// 모든 user의  정보를 보내준다. 임시로 만들어봄
 router.get('/get', (req,res) => {
     DB.query('SELECT *FROM USERS', (err,result,fileds)=>{
         if(err) alert("DB Get Error");
@@ -46,16 +46,31 @@ router.get('/get', (req,res) => {
     })
 })
 
+// user의 고유아이디를 받아 DB에서 관련된 모든 정보를 삭제한다.(회원탈퇴)
+// url에 id를 받을지 아니면 값으로 요청받을지 고민이 필요해보인다.
 router.delete('/delete/:id', (req,res) => {
-    const number = req.params.id;
-    DB.query(`delete from users where userid =?`, number, (err,result,fileds) => {
+    const userid = req.params.id;
+    DB.query(`delete from users where userid =?`, userid, (err,result,fileds) => {
         if(err) console.log("DB Delete Error");
         res.json({status:"success"});
     })
 })
 
-router.put('/edit/', (req,res) => {
-    res.json({status:"success"});
+// 수정할 값들과 고유아이디를 받아 값들을 수정해준다.
+router.put('/edit', (req,res) => {
+    const rebo = req.body;
+    const userid = rebo.userid;
+    const nickname = rebo.nickname;
+    const birth = rebo.birth;
+    const address = rebo.address;
+    const account = rebo.account;
+
+    console.log(rebo);
+
+     DB.query(`update users set nickname = '${nickname}', birth = '${birth}', address = '${address}', account = '${account}' where userid = ?`,userid, (err,result,fileds) => {
+          if(err) console.log(err);
+          res.json({status:"success"});
+      })
 })
 
 
