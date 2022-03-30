@@ -13,27 +13,48 @@ function createHashedPassword(plainPassword) {
         return [crypto.pbkdf2Sync(plainPassword, salt, 9999, 64, 'sha512').toString('base64'), salt];
 }
 
+// email을 중복체크 하기 위한 함수. 중복이 있으면 true 반환, 중복이 없으면 false 반환.
+function isdup(temp){
+    return duplicate = temp.some(function(x){
+        return temp.indexOf(x) !== temp.lastIndexOf(x);
+    })
+}
+
 // 회원가입 형식에 맞는 json 파일을 받아 이를 user db에 넣어준다.
 router.post('/add', (req,res) => {
-    const rebo = req.body;
-    const encryption = createHashedPassword(rebo.password);
-    const userquery = 'INSERT INTO USERS (userid, email, password, salt, nickname, status, socialtype, sex, birth, address, account, create_at, profilelink) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)';
+    const body = req.body;
+    const encryption = createHashedPassword(body.password);
+    const userquery = 'INSERT INTO USERS (email, password, salt, nickname, status, socialtype, sex, birth, address, account, profilelink) VALUES (?,?,?,?,?,?,?,?,?,?,?)';
     const salt = encryption[1];
     const password = encryption[0];
-    const uservalue = [rebo.userid, rebo.email, password, salt, rebo.nickname, rebo.status, rebo.socialtype, rebo.sex, rebo.birth, rebo.address, rebo.account, rebo.create_at, rebo.profileLink];
-    DB.query(userquery,uservalue, (err,result,fileds) => {
-        if(err) console.log(err);
-        console.log(req.body);
-        res.json({status:"success"});
+    const uservalue = [body.email, password, salt, body.nickname, body.status, body.socialtype, body.sex, body.birth, body.address, body.account, body.profileLink];
+    DB.query(`select email from users`,(err,result) => {
+        const temp = result.map( v => v.email);
+        temp.push(body.email);
+        console.log(isdup(temp));
+
+        if(isdup(temp) == true){ // 중복이 발생했다.
+            temp.pop();
+            res.json({status:"email duplicate"});
+        }
+        else{
+            DB.query(userquery,uservalue, (err,result,fileds) => {
+                if(err) console.log(err);
+                console.log(req.body);
+                res.json({status:"success"});
+            })
+        }
+        
     })
+    
 })
 
 // user의 고유 id를 받아 user의 정보 db에서 보내준다.
 router.get('/get/:id', (req,res) => {
     const userid = req.params.id;
-    DB.query(`select *from users where userid=?`,userid,(err,result,fileds)=>{
+    DB.query(`select *from users where userid = ?`,userid,(err,result,fileds)=>{
         if(err) console.log("DB Get Error");
-        res.send(result);    
+        res.json(result);    
     })
 })
 
@@ -41,7 +62,7 @@ router.get('/get/:id', (req,res) => {
 router.get('/get', (req,res) => {
     DB.query('SELECT *FROM USERS', (err,result,fileds)=>{
         if(err) alert("DB Get Error");
-        res.send(result);
+        res.json(result);
         // 정렬해서 넘겨줄 필요가 있다.    
     })
 })
@@ -58,14 +79,14 @@ router.delete('/delete/:id', (req,res) => {
 
 // 수정할 값들과 고유아이디를 받아 값들을 수정해준다.
 router.put('/edit', (req,res) => {
-    const rebo = req.body;
-    const userid = rebo.userid;
-    const nickname = rebo.nickname;
-    const birth = rebo.birth;
-    const address = rebo.address;
-    const account = rebo.account;
+    const body = req.body;
+    const userid = body.userid;
+    const nickname = body.nickname;
+    const birth = body.birth;
+    const address = body.address;
+    const account = body.account;
 
-    console.log(rebo);
+    console.log(body);
 
      DB.query(`update users set nickname = '${nickname}', birth = '${birth}', address = '${address}', account = '${account}' where userid = ?`,userid, (err,result,fileds) => {
           if(err) console.log(err);
