@@ -37,6 +37,7 @@ var route_loader = require('./routes/route_loader.js');
 var post = require("./routes/post");
 var proj = require("./routes/proj");
 var user = require("./routes/user");
+const auth = require("./routes/auth");
 // 익스프레스 객체 생성
 var app = express();
 
@@ -74,6 +75,7 @@ app.use(expressSession({
 app.use("/post",post);
 app.use("/proj",proj);
 app.use("/user", user);
+app.use("/auth", auth);
 
 
 
