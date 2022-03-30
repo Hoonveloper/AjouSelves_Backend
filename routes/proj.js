@@ -57,7 +57,6 @@ var getproj= async function(req,res){
   
   try{
       const [proj]= await db.promise().query(`SELECT * FROM projs AS p JOIN users AS u ON p.userid=u.userid WHERE p.projid=${id};`);
-      proj.comments=new Array();
       const [comments]= await db.promise().query(`SELECT * FROM comments WHERE projid=${id}`);
       comments.map((e)=> {
           var temp= new Object();

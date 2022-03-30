@@ -53,7 +53,6 @@ var getpost= async function(req,res){
     const id = req.params.id;
     try{
         const [post]= await db.promise().query(`SELECT p.postID, u.NICKNAME, p.title,p.explained, p.created_at FROM posts AS p JOIN users AS u ON p.userID=u.userid WHERE p.postid=${id};`);
-        post.comments=new Array();
         const [comments]= await db.promise().query(`SELECT * FROM comments WHERE postid=${id}`);
         comments.map((e)=> {
             var temp= new Object();
@@ -145,6 +144,7 @@ var delpost = async function(req,res){
         res.status(400).json({ text: 'ErrorCode:400, 잘못된 요청입니다.' });
     }
 }
+
 
 router.post("/searchbytitle",searchpostbytitle);
 router.get("/all",getALLpost);
