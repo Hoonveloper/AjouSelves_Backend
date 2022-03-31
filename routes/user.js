@@ -1,6 +1,8 @@
 const express = require("express");
 const router = express.Router();
+const crypto = require('crypto');
 const DB = require('../database/maria'); // DB 정보 가져오기
+const { create } = require("domain");
 DB.connect();
 
 //body-parser

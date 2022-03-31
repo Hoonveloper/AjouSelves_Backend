@@ -1,4 +1,3 @@
-
 const express = require('express');
 const router =express.Router();
 const jwt = require('jsonwebtoken');
@@ -8,7 +7,7 @@ db.connect();
 const addComment = async function(req,res){
     const projid= req.body.projid || "NULL";
     const postid = req.body.postid || "NULL";
-    const userid= req.body.userid ;
+    const userid= req.body.userid;
     const comment= req.body.comment;
     if (!comment){
         console.log("zz");

@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const crypto = require('crypto');
+const jwt = require('jsonwebtoken');
 const DB = require('../database/maria'); // DB 정보 가져오기
 DB.connect();
 
@@ -37,12 +38,37 @@ router.post('/register', (req,res) => {
     })
 })
 
+//비밀번호 확인 라우터
+router.get('/verify', (req,res) => {
+    const email = req.body.email;
+    const pw = req.body.password;
+    DB.query(`select salt, password from users where email = ?`, email, (err,result,fields) => {
+        const dbsalt = result[0].salt;
+        const dbpw = result[0].password;
+        const reqpw = [crypto.pbkdf2Sync(pw, dbsalt, 9999, 64, 'sha512').toString('base64')];
+        if(reqpw == dbpw){
+            res.json({status:"success"});
+        }
+        else{
+            console.log('비밀번호가 일치하지 않습니다.');
+            res.status(400).json({ text: 'ErrorCode:400, 잘못된 요청입니다.' });
+        }
+    })
+    
+})
+
+module.exports = router;
+
+
+// router.get('/login', (req,res) => {
+//     jwt.sign
+// })
+
 // user login 처리
 // router.post('/login', (req,res) => {
 //
 //})
 
-module.exports = router;
 
 // var kakao = function(req,res){
 
