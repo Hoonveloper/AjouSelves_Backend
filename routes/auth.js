@@ -2,8 +2,15 @@ const express = require("express");
 const router = express.Router();
 const crypto = require('crypto');
 const DB = require('../database/maria'); // DB 정보 가져오기
+const { smtpTransport } = require('../config/email');
+
 DB.connect();
 
+//인증번호 생성함수.
+const generateRandom = function (min, max) {
+    var ranNum = Math.floor(Math.random()*(max-min+1)) + min;
+    return ranNum;
+}
 //body-parser
 router.use(express.urlencoded({extended:true}));
 router.use(express.json());
@@ -15,33 +22,80 @@ function createHashedPassword(plainPassword) {
 }
 
 // 회원가입 형식에 맞는 json 파일을 받아 이를 user db에 넣어준다.
-router.post('/register', (req,res) => {
+router.post('/register', async function(req,res) {
     const body = req.body;
-    // 이메일 중복 여부를 체크해준다.
-    DB.query(`select email from users where email = ?`,body.email, (err,result,fields) => {
-        if(Object.keys(result).length === 0){ //result 객체가 값이 없으면 중복되지 않는다.
-            const encryption = createHashedPassword(body.password);
-            const userquery = 'INSERT INTO USERS (email, password, salt, nickname, status, socialtype, sex, birth, address, account, profilelink) VALUES (?,?,?,?,?,?,?,?,?,?,?)';
-            const salt = encryption[1];
-            const password = encryption[0];
-            const uservalue = [body.email, password, salt, body.nickname, body.status, body.socialtype, body.sex, body.birth, body.address, body.account, body.profilelink];
-            DB.query(userquery,uservalue, (err,result,fileds) => {
-                if(err) console.log(err);
-                console.log(req.body);
-                res.json({status:"success"});
-            })
+    const encryption = createHashedPassword(body.password);
+    const userquery = 'INSERT INTO USERS (email, password, salt, nickname, status, socialtype, sex, birth, address, account, profilelink) VALUES (?,?,?,?,?,?,?,?,?,?,?)';
+    const salt = encryption[1];
+    const password = encryption[0];
+    const uservalue = [body.email, password, salt, body.nickname, body.status, body.socialtype, body.sex, body.birth, body.address, body.account, body.profilelink];
+    DB.query(userquery,uservalue, (err,result,fileds) => {
+        if(err) console.log(err);
+        console.log(req.body);
+        res.json({status:"success"});
+    })
+        
+        
+    
+});
+
+const emailVerification = async function(req,res){
+    const email= req.body.email;
+    const number = generateRandom(111111,999999);
+    const mailoptions={
+        from:"ajouselves@naver.com",
+        to :email,
+        subject:"[Goods By us] 인증 관련 메일입니다.",
+        text: "오른쪽 숫자 6자리를 입력해주세요 : " + number
+    }
+
+    try{
+        const [data]= await DB.promise().query(`select email from users where email = '${email}'`);
+        console.log(data);
+        if (Object.keys(data).length === 0) {
+
+            //이메일 verification 코드
+            const result = await smtpTransport.sendMail(mailoptions,(error,response) => {
+                if(error){
+                    console.log(error);
+                    return res.status(400).send({status:"이메일 오류"});
+    
+                }else {
+                    /* 클라이언트에게 인증 번호를 보내서 사용자가 맞게 입력하는지 확인! */
+                        return res.status(200).send({
+                            number: number
+                        });
+                    }
+                smtpTransport.close();
+            });
+
         }
-        else{ // result 객체에 중복되는 email이 존재한다.
+        else {
+            //이미 존재하는 유저. 
             res.json({status : "email duplicate"});
         }
-    })
-})
+        
+    }catch(e){
+        console.log(e);
+        res.status(400).json({ text: 'ErrorCode:400, 잘못된 요청입니다.' });
+
+    }
+        
+
+    
+    // try{
+
+        
+    
+    // }
+   
+}
 
 // user login 처리
 // router.post('/login', (req,res) => {
 //
 //})
-
+router.post('/email',emailVerification);
 module.exports = router;
 
 // var kakao = function(req,res){
