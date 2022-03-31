@@ -38,6 +38,8 @@ var post = require("./routes/post");
 var proj = require("./routes/proj");
 var user = require("./routes/user");
 const auth = require("./routes/auth");
+var comment = require("./routes/comment");
+
 // 익스프레스 객체 생성
 var app = express();
 
@@ -76,7 +78,7 @@ app.use("/post",post);
 app.use("/proj",proj);
 app.use("/user", user);
 app.use("/auth", auth);
-
+app.use("/comment",comment);
 
 
 
