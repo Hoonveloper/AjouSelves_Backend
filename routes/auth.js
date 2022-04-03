@@ -7,15 +7,15 @@ const { smtpTransport } = require('../config/email');
 
 DB.connect();
 
+//body-parser
+router.use(express.urlencoded({extended:true}));
+router.use(express.json());
+
 //인증번호 생성함수.
 const generateRandom = function (min, max) {
     var ranNum = Math.floor(Math.random()*(max-min+1)) + min;
     return ranNum;
 }
-//body-parser
-router.use(express.urlencoded({extended:true}));
-router.use(express.json());
-
 // 비밀번호 암호화(crypto, salt 사용)
 function createHashedPassword(plainPassword) {
         const salt = crypto.randomBytes(64).toString('base64')
@@ -26,10 +26,10 @@ function createHashedPassword(plainPassword) {
 router.post('/register', async function(req,res) {
     const body = req.body;
     const encryption = createHashedPassword(body.password);
-    const userquery = 'INSERT INTO USERS (email, password, salt, nickname, status, socialtype, sex, birth, address, account, profilelink) VALUES (?,?,?,?,?,?,?,?,?,?,?)';
+    const userquery = 'INSERT INTO USERS (email, password, salt, phonenumber, nickname, status, socialtype, sex, birth, address, account, profilelink) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)';
     const salt = encryption[1];
     const password = encryption[0];
-    const uservalue = [body.email, password, salt, body.nickname, body.status, body.socialtype, body.sex, body.birth, body.address, body.account, body.profilelink];
+    const uservalue = [body.email, password, salt, body.phonenumber, body.nickname, body.status, body.socialtype, body.sex, body.birth, body.address, body.account, body.profilelink];
     DB.query(userquery,uservalue, (err,result,fileds) => {
         if(err) console.log(err);
         console.log(req.body);
@@ -81,19 +81,10 @@ const emailVerification = async function(req,res){
         res.status(400).json({ text: 'ErrorCode:400, 잘못된 요청입니다.' });
 
     }
-        
-
-    
-    // try{
-
-        
-    
-    // }
-   
 }
 
-//비밀번호 확인 라우터
-router.get('/verify', (req,res) => {
+//비밀번호 일치 확인 라우터
+router.get('/verifypw', (req,res) => {
     const email = req.body.email;
     const pw = req.body.password;
     DB.query(`select salt, password from users where email = ?`, email, (err,result,fields) => {
@@ -101,6 +92,7 @@ router.get('/verify', (req,res) => {
         const dbpw = result[0].password;
         const reqpw = [crypto.pbkdf2Sync(pw, dbsalt, 9999, 64, 'sha512').toString('base64')];
         if(reqpw == dbpw){
+            console.log("로그인 성공");
             res.json({status:"success"});
         }
         else{
@@ -111,6 +103,29 @@ router.get('/verify', (req,res) => {
     
 })
 
+// email 중복 여부 확인
+router.get('/verifyid', (req,res) => {
+    const reqemail = req.body.email;
+    DB.query(`select email from users where email = ?`, reqemail, (err,result,fields) => {
+        if(result[0] == undefined){
+            console.log("이 이메일은 사용 가능합니다.");
+            res.json({status:"success"});
+        }
+        else{
+            const idverify = result[0].email;
+            if(reqemail == idverify){
+                console.log("이메일이 중복됩니다. 다른 이메일을 입력해주세요");
+                res.status(400).json({ text: 'ErrorCode:400, 잘못된 요청입니다.' });
+            }
+            else{
+                console.log("이 이메일은 사용 가능합니다.");
+                res.json({status:"success"});
+            }    
+        }
+    })
+})
+
+router.post('/email',emailVerification);
 module.exports = router;
 
 
@@ -123,8 +138,6 @@ module.exports = router;
 //
 //})
 
-router.post('/email',emailVerification);
-module.exports = router;
 
 // var kakao = function(req,res){
 

@@ -29,11 +29,7 @@ var config = require('./config/config');
 // 모듈로 분리한 데이터베이스 파일 불러오기
 var database = require('./database/maria');
 
-// 모듈로 분리한 라우팅 파일 불러오기
-var route_loader = require('./routes/route_loader.js');
-
-
-
+// 라우터로 정리한 기능 불러오기
 var post = require("./routes/post");
 var proj = require("./routes/proj");
 var user = require("./routes/user");
@@ -74,12 +70,12 @@ app.use(expressSession({
 	saveUninitialized:true
 }));
 
+// 라우터로 정리한 기능 사용하기
 app.use("/post",post);
 app.use("/proj",proj);
 app.use("/user", user);
 app.use("/auth", auth);
 app.use("/comment",comment);
-
 
 
 //===== Passport 사용 설정 =====//
