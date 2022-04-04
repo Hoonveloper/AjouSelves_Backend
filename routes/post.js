@@ -3,7 +3,24 @@ const router =express.Router();
 const jwt = require('jsonwebtoken');
 const db= require('../database/maria');
 db.connect();
+const multer= require('multer');
 
+const storage = multer.diskStorage({
+    destination: function(req, file, callback){
+        callback(null, 'photo/')
+    },
+    filename: function(req, file, callback){
+        callback(null, Date.now()+'-'+file.originalname)
+    }
+});
+
+const upload= multer({
+	storage:storage,
+	limits:{
+		files:10,
+		fileSize: 1024*1024*5
+	}
+});
 
 const jwtMiddleware=(req,res,next)=> {
     const token = req.header.token;
@@ -92,29 +109,92 @@ var getALLpost= async function(req,res){
         res.status(400).json({ text: 'ErrorCode:400, 잘못된 요청입니다.' });
     }
 }
+const addpost_nophoto= async function(req,res){
+    //INSERT INTO posts() VALUES()...
+   //project 정보 db에 저장하는코드
+   
+       const userid=req.body.userid;
+       const title= req.body.title;
+       const explained= req.body.explained;
+       console.log(req.body);
+       try{
+           const data=await db.promise().query(`INSERT INTO posts(userid,title,explained) VALUES(${userid},'${title}','${explained}')`);
+           res.json({status:"success"});
+   
+       }catch(e){
+           
+           console.log('addpost에서 error 발생!');
+           console.log(e);
+           res.status(400).json({ text: 'ErrorCode:400, 잘못된 요청입니다.' });
+   
+       }
+   
+   }
 
-var addpost= async function(req,res){
+const addpost_onephoto =  async function(req,res){
  //INSERT INTO posts() VALUES()...
 //project 정보 db에 저장하는코드
-
+    //console.log("add");
+    const photos = req.file;
     const userid=req.body.userid;
     const title= req.body.title;
     const explained= req.body.explained;
-    console.log(req.body);
+    
+  
+    console.log(req.file);
     try{
-        const data=await db.promise().query(`INSERT INTO posts(userid,title,explained) VALUES(${userid},'${title}','${explained}')`);
+        const [data]=await db.promise().query(`INSERT INTO posts(userid,title,explained) VALUES(${userid},'${title}','${explained}')`);
+        const insertid=data.insertId;
+        console.log("파일 한 개 ");
+        const photo_url=`/photo/${photos.filename}`;
+        const [photo_data]= await db.promise().query(`INSERT INTO photos (postid,projid,url) VALUES(${insertid},NULL,'${photo_url}');`);
+        
         res.json({status:"success"});
-
-    }catch{
+    }catch(e){
         console.log('addpost에서 error 발생!');
+        console.log(e);
         res.status(400).json({ text: 'ErrorCode:400, 잘못된 요청입니다.' });
-
     }
+};
 
-}
+const addpost_multiphoto=async function(req,res){
+    //INSERT INTO posts() VALUES()...
+   //project 정보 db에 저장하는코드
+       //console.log("add");
+    const photos = req.files;
+    const userid=req.body.userid;
+    const title= req.body.title;
+    const explained= req.body.explained;
+    
+    
+    console.log(req.files);
+    try{
+        const [data]=await db.promise().query(`INSERT INTO posts(userid,title,explained) VALUES(${userid},'${title}','${explained}')`);
+        const insertid=data.insertId;
+        console.log("파일 여러개 "+photos.length);
+      
+        photos.forEach( async(photo,idx)=> {
+            const photo_url=`/photo/${photo.filename}`;
+            console.log(photo_url);
+            const [photo_data]= await db.promise().query(`INSERT INTO photos (postid,projid,url) VALUES(${insertid},NULL,'${photo_url}');`);
+            if(idx==0){ // 첫번째 사진을 Thumbnail 이미지로 변경.
+                await db.promise().query(`UPDATE photos SET thumbnail=1 WHERE url='${photo_url}';`);
+            }
+            
+           
+        
+        })
+        
+        
+        res.json({status:"success"});
+    }catch(e){
+        console.log('addpost에서 error 발생!');
+        console.log(e);
+        res.status(400).json({ text: 'ErrorCode:400, 잘못된 요청입니다.' });
+    }
+};
 
-
-var editpost= async function(req,res){
+var editpost_nophoto= async function(req,res){
 
     const postid = req.params.id;
     const title= req.body.title;
@@ -149,7 +229,11 @@ var delpost = async function(req,res){
 router.post("/searchbytitle",searchpostbytitle);
 router.get("/all",getALLpost);
 router.get("/:id",getpost);
-router.put("/edit/:id",editpost);
+router.put("/edit/:id",editpost_nophoto);
+//router.put("/edit/single/:id",editpost_one);
+//router.put("/edit/multi/:id",editpost);
 router.delete("/delete/:id",delpost);
-router.post("/add",addpost);
+router.post("/add",addpost_nophoto); //사진 없을 때
+router.post("/add/single",upload.single("photo"),addpost_onephoto); //사진 1개
+router.post("/add/multi",upload.array("photo"),addpost_multiphoto); //사진 2개 이상
 module.exports = router;
