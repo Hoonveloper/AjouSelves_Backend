@@ -1,6 +1,7 @@
 
 
 // Express 기본 모듈 불러오기
+const fs=require('fs');
 var express = require('express')
   , http = require('http')
   , path = require('path');
@@ -35,6 +36,7 @@ var proj = require("./routes/proj");
 var user = require("./routes/user");
 const auth = require("./routes/auth");
 var comment = require("./routes/comment");
+const { fstat } = require('fs');
 
 // 익스프레스 객체 생성
 var app = express();
@@ -59,7 +61,7 @@ app.use(bodyParser.json())
 
 // public 폴더를 static으로 오픈
 app.use('/public', static(path.join(__dirname, 'public')));
- 
+
 // cookie-parser 설정
 app.use(cookieParser());
 
@@ -86,7 +88,6 @@ app.use(flash());
 
 
 
-
 //라우팅 정보를 읽어들여 라우팅 설정
 var router = express.Router();
 
@@ -98,7 +99,6 @@ var router = express.Router();
 // 패스포트 라우팅 설정
 //var userPassport = require('./routes/user_passport');
 //userPassport(router, passport);
-
 
 
 //===== 404 에러 페이지 처리 =====//
@@ -137,6 +137,9 @@ app.on('close', function () {
 
 // 시작된 서버 객체를 리턴받도록 합니다. 
 var server = http.createServer(app).listen(app.get('port'), function(){
+
+	const dir= './photo';
+	if( !fs.existsSync(dir)) fs.mkdirSync(dir);
 	console.log('서버가 시작되었습니다. 포트 : ' + app.get('port'));
    
 });
