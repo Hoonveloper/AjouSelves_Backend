@@ -4,9 +4,9 @@
 
 API 명세서
 
-[게시글_api명세서_(완성).pdf](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/304386ed-f291-46e9-a6e7-6696b02cd276/게시글_api명세서_(완성).pdf)
+[게시글_api명세서_(완성).pdf](https://drive.google.com/file/d/1-sO9aD8kMA-eY5Yekj3EPju4YxCT9cHc/view?usp=sharing)
 
-[댓글_API명세서.pdf](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/7dbe2099-b870-4b80-88b8-b3b791fa7f5a/댓글_API명세서.pdf)
+[댓글_API명세서.pdf](https://drive.google.com/file/d/1yqcUUEhEiQjXxWQK6CYZ8Nm8hnuTASNL/view?usp=sharing)
 
 ## initial setting
 
