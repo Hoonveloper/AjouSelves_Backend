@@ -53,12 +53,12 @@ var searchpostbytitle = async function(req,res){
     console.log(title);
  
     try{
-        const [data] = await db.promise().query(`SELECT p.postID,p.title, p.explained, p.created_at, u.NICKNAME FROM posts AS p JOIN users as u ON p.userid=u.userid where title LIKE '%${title}%';`);
+        const [data] = await db.promise().query(`SELECT p.postid,p.title, p.explained, p.created_at, u.nickname, photos.url FROM posts AS p INNER JOIN users as u ON p.userid=u.userid INNER JOIN photos ON p.postid=photos.postid where title LIKE '%${title}%' AND photos.thumbnail=1;`);
         console.log(data);
         res.json(data);
     }catch{
         console.log('searchbytitle error 발생!');
-        res.status(400).json({ text: 'ErrorCode:400, 잘못된 요청입니다.' });
+        res.status(400).json({ status: "fail" });
     }
 }
 
@@ -69,7 +69,15 @@ var getpost= async function(req,res){
     */
     const id = req.params.id;
     try{
-        const [post]= await db.promise().query(`SELECT p.postID, u.NICKNAME, p.title,p.explained, p.created_at FROM posts AS p JOIN users AS u ON p.userID=u.userid WHERE p.postid=${id};`);
+        const [post]= await db.promise().query(`SELECT p.postid, u.nickname, p.title,p.explained, p.created_at FROM posts AS p JOIN users AS u ON p.userid=u.userid WHERE p.postid=${id};`);
+        const [photos]= await db.promise().query(`SELECT * FROM photos WHERE postid=${id} ORDER BY thumbnail desc;`);
+        console.log[photos];
+        post[0].photos= new Array();
+        photos.forEach((photo)=>{
+            post[0].photos.push(photo.url);
+
+        })
+        console.log(post[0].title);
         const [comments]= await db.promise().query(`SELECT * FROM comments WHERE postid=${id}`);
         comments.map((e)=> {
             var temp= new Object();
@@ -84,8 +92,8 @@ var getpost= async function(req,res){
         console.log(post);
         res.send(post);
     }catch{
-        console.log('getcomments에서 error 발생!');
-        res.status(400).json({ text: 'ErrorCode:400, 잘못된 요청입니다.' });
+        console.log('getpost에서 error 발생!');
+        res.status(400).json({ status: "fail" });
     }
 
 }
@@ -98,15 +106,15 @@ var getALLpost= async function(req,res){
     */
 
     try{
-        const [data] = await db.promise().query(`SELECT p.title, p.explained, p.created_at, u.userid, u.NICKNAME FROM posts as p join users as u ON p.userid=u.userid ORDER BY created_at DESC`);
-        console.log(data);
+        const [data] = await db.promise().query(`SELECT p.title, p.explained, p.created_at, u.userid, u.nickname, ph.url FROM posts as p INNER JOIN users as u ON p.userid=u.userid INNER JOIN photos as ph ON ph.postid=p.postid where thumbnail=1 ORDER BY p.created_at DESC`);
+        //console.log(data);
         res.json(data);
 
 
-    }catch{
-
+    }catch(e){
+        console.log(e);
         console.log('getALLpost에서 error 발생!');
-        res.status(400).json({ text: 'ErrorCode:400, 잘못된 요청입니다.' });
+        res.status(400).json({ status: "fail" });
     }
 }
 const addpost_nophoto= async function(req,res){
@@ -125,7 +133,7 @@ const addpost_nophoto= async function(req,res){
            
            console.log('addpost에서 error 발생!');
            console.log(e);
-           res.status(400).json({ text: 'ErrorCode:400, 잘못된 요청입니다.' });
+           res.status(400).json({ status: "fail" });
    
        }
    
@@ -153,7 +161,7 @@ const addpost_onephoto =  async function(req,res){
     }catch(e){
         console.log('addpost에서 error 발생!');
         console.log(e);
-        res.status(400).json({ text: 'ErrorCode:400, 잘못된 요청입니다.' });
+        res.status(400).json({ status: "fail" });
     }
 };
 
@@ -190,7 +198,7 @@ const addpost_multiphoto=async function(req,res){
     }catch(e){
         console.log('addpost에서 error 발생!');
         console.log(e);
-        res.status(400).json({ text: 'ErrorCode:400, 잘못된 요청입니다.' });
+        res.status(400).json({ status: "fail" });
     }
 };
 
@@ -199,17 +207,64 @@ var editpost_nophoto= async function(req,res){
     const postid = req.params.id;
     const title= req.body.title;
     const explained= req.body.explained;
-    console.log(req.body);
+    
+    //console.log(req.body);
     try{
         const data= await db.promise().query(`UPDATE posts SET title='${title}', explained='${explained}' WHERE postid=${postid};`);
         res.json({status:"success"});
 
     }catch{
         console.log('editpost에서 error 발생!');
-        res.status(400).json({ text: 'ErrorCode:400, 잘못된 요청입니다.' });
+        res.status(400).json({ status: "fail" });
 
     }
     
+
+}
+var editpost_onephoto = async function (req,res){
+    const photos = req.file;
+    const postid = req.params.id;
+    const title= req.body.title;
+    const explained= req.body.explained;
+    const photo_url=`/photo/${photos.filename}`;
+    try{
+        await db.promise().query(`DELETE from photos where postid=${postid};`); //본래 있던 사진 삭제. 
+        await db.promise().query(`INSERT INTO photos(postid,projid,url,thumbnail) VALUES(${postid},NULL,'${photo_url}',1)`);
+        const data= await db.promise().query(`UPDATE posts SET title='${title}', explained='${explained}' WHERE postid=${postid};`);
+        res.json({status:"success"});
+
+    }catch(e){
+        console.log(e);
+        console.log('editpost에서 error 발생!');
+        res.status(400).json({ status: "fail" });
+    }
+}
+
+var editpost_multiphoto = async function(req,res){
+    const photos = req.files;
+    const postid = req.params.id;
+    const title= req.body.title;
+    const explained= req.body.explained;
+    try{
+        await db.promise().query(`DELETE from photos where postid=${postid};`); //본래 있던 사진 삭제. 
+        photos.forEach( async(photo,idx)=> {
+            const photo_url=`/photo/${photo.filename}`;
+            console.log(photo_url);
+            await db.promise().query(`INSERT INTO photos (postid,projid,url) VALUES(${postid},NULL,'${photo_url}');`);
+            if(idx==0){ // 첫번째 사진을 Thumbnail 이미지로 변경.
+                await db.promise().query(`UPDATE photos SET thumbnail=1 WHERE url='${photo_url}';`);
+            }
+        })
+        const data= await db.promise().query(`UPDATE posts SET title='${title}', explained='${explained}' WHERE postid=${postid};`);
+        res.json({status:"success"});
+
+    }catch(e){
+        console.log(e);
+        console.log('editpost에서 error 발생!');
+        res.status(400).json({ status: "fail" });
+    }
+
+
 
 }
 
@@ -217,21 +272,21 @@ var delpost = async function(req,res){
     const postid = req.params.id;
     try{
         const data =await db.promise().query(`DELETE FROM posts WHERE postid=${postid};`);
-        console.log(data);
+        //console.log(data);
         res.json({status:"success"});
     }catch{
-        console.log('editpost에서 error 발생!');
-        res.status(400).json({ text: 'ErrorCode:400, 잘못된 요청입니다.' });
+        console.log('delpost에서 error 발생!');
+        res.status(400).json({ status: "fail" });
     }
 }
 
 
-router.post("/searchbytitle",searchpostbytitle);
+router.post("/search",searchpostbytitle);
 router.get("/all",getALLpost);
 router.get("/:id",getpost);
 router.put("/edit/:id",editpost_nophoto);
-//router.put("/edit/single/:id",editpost_one);
-//router.put("/edit/multi/:id",editpost);
+router.put("/edit/single/:id",upload.single("photo"),editpost_onephoto);
+router.put("/edit/multi/:id",upload.array("photo"),editpost_multiphoto);
 router.delete("/delete/:id",delpost);
 router.post("/add",addpost_nophoto); //사진 없을 때
 router.post("/add/single",upload.single("photo"),addpost_onephoto); //사진 1개
