@@ -4,12 +4,15 @@ const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 const DB = require('../database/maria'); // DB 정보 가져오기
 const { smtpTransport } = require('../config/email');
+require('dotenv').config(); // jwt secret key 가져오기
+const { verifyToken } = require('./authmiddleware');
 
 DB.connect();
 
 //body-parser
 router.use(express.urlencoded({extended:true}));
 router.use(express.json());
+
 
 //인증번호 생성함수.
 const generateRandom = function (min, max) {
@@ -84,24 +87,30 @@ const emailVerification = async function(req,res){
 }
 
 //비밀번호 일치 확인 라우터
-router.get('/verifypw', (req,res) => {
+// router.get('/verifypw', (req,res) => {
+const passwordverify = async function(req,res,next){
     const email = req.body.email;
     const pw = req.body.password;
-    DB.query(`select salt, password from users where email = ?`, email, (err,result,fields) => {
-        const dbsalt = result[0].salt;
-        const dbpw = result[0].password;
+    try{
+        const [data] = await DB.promise().query(`select salt, password from users where email = ?`, email)
+        const dbsalt = data[0].salt;
+        const dbpw = data[0].password;
         const reqpw = [crypto.pbkdf2Sync(pw, dbsalt, 9999, 64, 'sha512').toString('base64')];
         if(reqpw == dbpw){
             console.log("로그인 성공");
-            res.json({status:"success"});
+            //res.json({status:"success"});
+            next();
         }
         else{
             console.log('비밀번호가 일치하지 않습니다.');
-            res.status(400).json({ text: 'ErrorCode:400, 잘못된 요청입니다.' });
+            res.json({status:"fail"});
         }
-    })
+    }catch(e){
+        console.log(e);
+        res.status(400).json({ text: 'ErrorCode:400, 잘못된 요청입니다.' });
+    }
     
-})
+}
 
 // email 중복 여부 확인
 router.get('/verifyid', (req,res) => {
@@ -124,6 +133,54 @@ router.get('/verifyid', (req,res) => {
         }
     })
 })
+
+/*  
+    user login 처리
+    login 처리를 하게 되면 먼저 검증을 한다. 아이디 패스워드가 맞는지
+    맞다면 userid를 페이로드에 담아 토큰을 전달한다.
+    토큰을 받게 되면 그 userid로 필요한 정보를 받는다.
+*/
+
+router.get('/test', verifyToken, (req,res) => {
+    const user_id = req.decoded._id;
+    return res.status(200).json({
+        code: 200,
+        message: '토큰은 정상입니다.',
+        data: {
+          _id : user_id
+        }
+      });
+})
+
+router.use(passwordverify); // 비밀번호 검증 미들웨어 사용
+
+router.post('/login', async (req,res) => {
+    
+    const {email,password} = req.body;
+    try{
+        const [data] = await DB.promise().query(`select userid from users where email=?`,email) 
+        console.log(data[0].userid);
+        const user_id = data[0].userid
+
+        const token = jwt.sign({
+        _id : user_id
+        },process.env.JWT_SECRET,{
+            expiresIn: '30m',
+            issuer : 'AjouSelves_Back',
+        })
+
+        return res.json({
+            code: 200,
+            message: '토큰이 발급되었습니다.',
+            token : token
+        })
+    }
+    catch(e){
+        console.log(e);
+        res.status(400).json({ text: 'ErrorCode:400, 잘못된 요청입니다.' });
+    }
+});
+
 
 router.post('/email',emailVerification);
 module.exports = router;

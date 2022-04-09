@@ -37,7 +37,7 @@ router.delete('/:id', (req,res) => {
 })
 
 // 수정할 값들과 고유아이디를 받아 값들을 수정해준다.
-router.put('/edit', (req,res) => {
+router.put('/edit/:id', (req,res) => {
     const body = req.body;
     const userid = body.userid;
     const nickname = body.nickname;
