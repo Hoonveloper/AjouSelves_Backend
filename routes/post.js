@@ -117,7 +117,7 @@ var getALLpost= async function(req,res){
         res.status(400).json({ status: "fail" });
     }
 }
-const addpost_nophoto= async function(req,res){
+var addpost_nophoto= async function(req,res){
     //INSERT INTO posts() VALUES()...
    //project 정보 db에 저장하는코드
    
