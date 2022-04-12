@@ -19,7 +19,7 @@ router.get('/:id', (req,res) => {
 
 // 모든 user의  정보를 보내준다. 임시로 만들어봄
 router.get('/', (req,res) => {
-    DB.query('SELECT *FROM USERS', (err,result,fileds)=>{
+    DB.query('select *from users', (err,result,fileds)=>{
         if(err) alert("DB Get Error");
         res.json(result);
         // 정렬해서 넘겨줄 필요가 있다.    

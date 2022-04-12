@@ -29,14 +29,16 @@ function createHashedPassword(plainPassword) {
 router.post('/register', async function(req,res) {
     const body = req.body;
     const encryption = createHashedPassword(body.password);
-    const userquery = 'INSERT INTO USERS (email, password, salt, phonenumber, nickname, status, socialtype, sex, birth, address, account, profilelink) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)';
+    const userquery = 'insert into users (email, password, salt, phonenumber, nickname, status, socialtype, sex, birth, address, account, profilelink) values (?,?,?,?,?,?,?,?,?,?,?,?)';
     const salt = encryption[1];
     const password = encryption[0];
     const uservalue = [body.email, password, salt, body.phonenumber, body.nickname, body.status, body.socialtype, body.sex, body.birth, body.address, body.account, body.profilelink];
     DB.query(userquery,uservalue, (err,result,fileds) => {
         if(err) console.log(err);
-        console.log(req.body);
-        res.json({status:"success"});
+	else{
+		console.log(req.body);
+        	res.json({status:"success"});
+	}
     })
         
         

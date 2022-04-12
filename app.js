@@ -37,10 +37,10 @@ var user = require("./routes/user");
 const auth = require("./routes/auth");
 var comment = require("./routes/comment");
 const { fstat } = require('fs');
-
+const cors = require('cors');
 // 익스프레스 객체 생성
 var app = express();
-
+app.use(cors());
 
 //===== 뷰 엔진 설정 =====//
 app.set('views', __dirname + '/views');
@@ -78,7 +78,9 @@ app.use("/proj",proj);
 app.use("/user", user);
 app.use("/auth", auth);
 app.use("/comment",comment);
-
+app.get("/test",(req,res) => {
+	res.json({status:"sex"});
+});
 
 //===== Passport 사용 설정 =====//
 // Passport의 세션을 사용할 때는 그 전에 Express의 세션을 사용하는 코드가 있어야 함
