@@ -3,7 +3,24 @@ const router =express.Router();
 const jwt = require('jsonwebtoken');
 const db= require('../database/maria');
 db.connect();
+const multer= require('multer');
 
+const storage = multer.diskStorage({
+    destination: function(req, file, callback){
+        callback(null, 'photo/')
+    },
+    filename: function(req, file, callback){
+        callback(null, Date.now()+'-'+file.originalname)
+    }
+});
+
+const upload= multer({
+	storage:storage,
+	limits:{
+		files:10,
+		fileSize: 1024*1024*5
+	}
+});
 const jwtMiddleware=(req,res,next)=> {
     const token = req.header.token;
     try {
@@ -96,31 +113,100 @@ try{
 
 }
 
-var addproj= async function(req,res){
-//project 정보 db에 저장하는코드
+var addproj_nophoto= async function(req,res){
+    //project 정보 db에 저장하는코드
 
 
-const userid=req.body.userid;
-const title= req.body.title;
-const explained= req.body.explained;
-const min_num= req.body.min_num;
-const category= req.body.category;
-var required={};
-required=req.body.required;
+    const userid=req.body.userid;
+    const title= req.body.title;
+    const explained= req.body.explained;
+    const min_num= req.body.min_num;
+    const category= req.body.category;
+    var required={};
+    required=req.body.required;
 
-required = JSON.stringify(required).replace(/[\']/g,/[\"]/g );
+    required = JSON.stringify(required).replace(/[\']/g,/[\"]/g );
 
-try{
-    const data=await db.promise().query(`INSERT INTO projs(userid,title,category,min_num,explained,required) VALUES(${userid},'${title}','${category}',${min_num},'${explained}','${required}' )`);
-    console.log(data);
-    res.json({status:"success"});
+    try{
+        const data=await db.promise().query(`INSERT INTO projs(userid,title,category,min_num,explained,required) VALUES(${userid},'${title}','${category}',${min_num},'${explained}','${required}' )`);
+        console.log(data);
+        res.json({status:"success"});
 
-}catch{
-    console.log('addpost에서 error 발생!');
-    res.status(400).json({ text: 'ErrorCode:400, 잘못된 요청입니다.' });
+    }catch(e){
+        console.log(e);
+        console.log('addpost에서 error 발생!');
+        res.status(400).json({ status: "fail" });
+
+    }
+}
+const addproj_onephoto= async function(req,res){
+    const photos = req.file;
+    const userid=req.body.userid;
+    const title= req.body.title;
+    const explained= req.body.explained;
+    const min_num= req.body.min_num;
+    const category= req.body.category;
+    var required={};
+    required=req.body.required;
+    
+
+    try{
+        const [data]=await db.promise().query(`INSERT INTO projs(userid,title,category,min_num,explained,required) VALUES(${userid},'${title}','${category}',${min_num},'${explained}','${required}' )`);
+        const insertid=data.insertId;
+        console.log("파일 한 개 ");
+        const photo_url=`/photo/${photos.filename}`;
+        const [photo_data]= await db.promise().query(`INSERT INTO photos (projid,postid,url) VALUES(${insertid},NULL,'${photo_url}');`);
+        res.json({status:"success"});
+    }catch(e){
+        console.log(e);
+        console.log('addpost_onephoto에서 error 발생!');
+        res.status(400).json({ status: "fail" });
+    }
+
 
 }
-}
+
+const addproj_multiphoto=async function(req,res){
+   
+   //project 정보 db에 저장하는코드
+   
+    const photos = req.files;
+    const userid=req.body.userid;
+    const title= req.body.title;
+    const explained= req.body.explained;
+    const min_num= req.body.min_num;
+    const category= req.body.category;
+    var required={};
+    required=req.body.required;
+    
+    
+    
+    console.log(req.files);
+    try{
+        const [data]=await db.promise().query(`INSERT INTO projs(userid,title,category,min_num,explained,required) VALUES(${userid},'${title}','${category}',${min_num},'${explained}','${required}' )`);
+        const insertid=data.insertId;
+        console.log("파일 여러개 "+photos.length);
+      
+        photos.forEach( async(photo,idx)=> {
+            const photo_url=`/photo/${photo.filename}`;
+            console.log(photo_url);
+            const [photo_data]= await db.promise().query(`INSERT INTO photos (postid,projid,url) VALUES(NULL,${insertid},'${photo_url}');`);
+            if(idx==0){ // 첫번째 사진을 Thumbnail 이미지로 변경.
+                await db.promise().query(`UPDATE photos SET thumbnail=1 WHERE url='${photo_url}';`);
+            }
+            
+           
+        
+        })
+        
+        
+        res.json({status:"success"});
+    }catch(e){
+        console.log('addpost_multi에서 error 발생!');
+        console.log(e);
+        res.status(400).json({ status: "fail" });
+    }
+};
 
 var editproj= async function(req,res){
 
@@ -165,11 +251,73 @@ try{
    
 }
 
+const join = async function(req,res){
+
+    /*
+    참여하는 코드
+    1.현재인원수 +1;
+    2.참가자 명단 업데이트
+
+    
+    */
+
+    const userid= req.body.userid;
+    const projid= req.body.projid;
+    var cur_num= req.body.cur_num; 
+    try{
+        const [data]= await db.promise().query(`select * from participants WHERE userid=${userid} AND projid=${projid}`);
+        if(data){
+            res.status(400).json({text:"already joined"});
+        }
+        await db.promise().query(`UPDATE projs set cur_num=${cur_num+1} WHERE projid=${projid};`); //인원수 +1
+        await db.promise().query(`INSERT INTO participants(projid,userid) VALUES(${projid},${userid})`); // 참가자 명단 업데이트
+        res.json({text:"success"});
+    }catch(e){
+        console.log(e);
+        console.log('join error 발생!');
+        res.status(400).json({ text: 'ErrorCode:400, 잘못된 요청입니다.' });
+    }
+       
+ }
+
+
+ const leave = async function(req,res){
+
+    /*
+    참여 취소하는 코드
+    1.현재인원수 +1;
+    2.참가자 명단 업데이트
+
+    
+    */
+
+    const userid= req.body.userid;
+    const projid= req.body.projid;
+    var cur_num= req.body.cur_num; 
+    try{
+        const [data]= await db.promise().query(`select * from participants WHERE userid=${userid} AND projid=${projid}`);
+        if(!data){
+            res.status(400).json({text:"you are not here"});
+        }
+        await db.promise().query(`UPDATE projs set cur_num=${cur_num-1} WHERE projid=${projid};`); //인원수 +1
+        await db.promise().query(`DELETE FROM participants WHERE projid=${projid} AND userid=${userid}`); // 참가자 명단 업데이트
+        res.json({text:"success"});
+    }catch(e){
+        console.log(e);
+        console.log('join error 발생!');
+        res.status(400).json({ text: 'ErrorCode:400, 잘못된 요청입니다.' });
+    }
+       
+ }
 router.post("/searchbytitle",searchprojbytitle);
 router.get("/",getALLproj);
 router.get("/:id",getproj);
 router.put("/edit/:id",editproj);
 router.delete("/delete/:id",delproj);
-router.post("/add",addproj);
+router.post("/add",addproj_nophoto);
+router.post("/add/single",upload.single("photo"),addproj_onephoto);
+router.post("/add/multi",upload.array("photo"),addproj_multiphoto);
+router.post("/join",join);
+router.post("/leave",leave);
 
 module.exports = router;
