@@ -106,7 +106,7 @@ var getproj= async function(req,res){
 var getALLproj= async function(req,res){
 //모든 project 정보 가져오는 코드
 try{
-    const [data] = await db.promise().query(`SELECT p.projID,p.title, p.state,p.category, p.created_at, u.userid, u.NICKNAME ,p.min_num FROM projs as p join users as u ON p.userid=u.userid ORDER BY created_at DESC`);
+    const [data] = await db.promise().query(`SELECT p.projid,p.title, p.state,p.category, p.created_at, u.userid, u.nickname,u.profilelink ,p.min_num,p.cur_num, ph.url FROM projs as p join users as u ON p.userid=u.userid INNER JOIN photo as ph ON ph.projid=p.projid ORDER BY created_at DESC`);
     console.log(data);
     res.json(data);
 
