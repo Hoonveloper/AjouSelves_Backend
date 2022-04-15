@@ -143,13 +143,14 @@ router.get('/verifyid', (req,res) => {
 
 router.get('/test', verifyToken, (req,res) => {
     const user_id = req.decoded._id;
-    return res.status(200).json({
+    console.log("Token is ok");
+    res.status(200).json({
         code: 200,
         message: '토큰은 정상입니다.',
         data: {
           _id : user_id
         }
-      });
+    });
 })
 
 router.post('/login', passwordverify ,async (req,res) => {
@@ -167,7 +168,7 @@ router.post('/login', passwordverify ,async (req,res) => {
             issuer : 'AjouSelves_Back',
         })
         
-        console.log("로그인 성공");
+        console.log("Login success");
         res.json({
             code: 200,
             message: '토큰이 발급되었습니다.',

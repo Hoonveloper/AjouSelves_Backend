@@ -19,7 +19,7 @@ router.get('/', verifyToken ,(req,res) => {
         } 
         else{
             console.log("user get success");
-            res.json({status:"success"});
+            res.json(result);
         }
     })   
 })
@@ -33,7 +33,7 @@ router.get('/all', (req,res) => {
         } 
         else{
             console.log("all user get success");
-            res.json({status:"success"});
+            res.json(result);
         }
     })   
 })
@@ -63,7 +63,7 @@ router.put('/', verifyToken ,(req,res) => {
     const address = req.body.address;
     const account = req.body.account;
 
-    DB.query(`update users set nickname = '${nickname}', birth = '${birth}', address = '${address}', account = '${account}' where userid = ?`,userid, (err,result,fileds) => {
+    DB.query(`update users set phonenumber = '${phonenumber}', nickname = '${nickname}', birth = '${birth}', address = '${address}', account = '${account}' where userid = ?`,userid, (err,result,fileds) => {
         if(err){
             console.log("user edit fail");
             res.status(400).json({ text: 'ErrorCode:400, 잘못된 요청입니다.' });
