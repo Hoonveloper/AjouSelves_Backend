@@ -21,34 +21,6 @@ const upload= multer({
 		fileSize: 1024*1024*5
 	}
 });
-const jwtMiddleware=(req,res,next)=> {
-    const token = req.header.token;
-    try {
-        const decode = jwt.verify(token,"SEC") // thopw
-        if(decode) {
-            req.user = decode;
-            next();
-        }
-        else {
-            res.json({
-                status:"fail",
-                msg:"유효하지 않은 토큰, 로그인 안했다"
-            })
-        }
-    }
-    catch(e) {
-        res.json({
-            status:"fail",
-            msg:"유효기간 만료"
-        })
-    }
-};
-
-
-
-//router.use(jwtMiddleware);
-
-
 
 var searchprojbytitle= async function(req,res){
   //SELECT * FROM proj WHERE title = req.asdf 이런식으로 제목으로 검색
@@ -64,7 +36,6 @@ var searchprojbytitle= async function(req,res){
       console.log('searchbytitle error 발생!');
       res.status(400).json({ text: 'ErrorCode:400, 잘못된 요청입니다.' });
   }
-
 }
 
 

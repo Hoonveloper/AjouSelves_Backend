@@ -22,30 +22,6 @@ const upload= multer({
 	}
 });
 
-const jwtMiddleware=(req,res,next)=> {
-    const token = req.header.token;
-    try {
-        const decode = jwt.verify(token,"SEC") // thopw
-        if(decode) {
-            req.user = decode;
-            next();
-        }
-        else {
-            res.json({
-                status:"fail",
-                msg:"유효하지 않은 토큰, 로그인 안했다"
-            })
-        }
-    }
-    catch(e) {
-        res.json({
-            status:"fail",
-            msg:"유효기간 만료"
-        })
-    }
-};
-
-//router.use(jwtMiddleware);
 var searchpostbytitle = async function(req,res){
     //검색을 통해 db에서 제목으로 검색
     //SELECT * FROM POSTS WHERE title = req.asdf 이런식으로 제목으로 검색
