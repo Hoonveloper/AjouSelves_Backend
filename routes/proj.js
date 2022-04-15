@@ -44,7 +44,7 @@ var getproj= async function(req,res){
   const id = req.params.id;
   
   try{
-        const [proj]= await db.promise().query(`SELECT P.title,p.state,p.category,p.min_num, p.cur_num,p.required, p.explained, u.nickname, u.userid,u.profilelink FROM projs AS p INNER JOIN users AS u ON p.userid=u.userid WHERE p.projid=${id};`);
+        const [proj]= await db.promise().query(`SELECT p.title,p.state,p.category,p.min_num, p.cur_num,p.required, p.explained, u.nickname, u.userid,u.profilelink FROM projs AS p INNER JOIN users AS u ON p.userid=u.userid WHERE p.projid=${id};`);
         const [photos]= await db.promise().query(`SELECT * FROM photos WHERE projid=${id} ORDER BY thumbnail desc;`);
         console.log[photos];
         proj[0].photos= new Array();
