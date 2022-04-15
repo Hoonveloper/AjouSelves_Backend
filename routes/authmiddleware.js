@@ -9,7 +9,6 @@ exports.verifyToken = (req, res, next) => {
       req.decoded = jwt.verify(req.headers.authorization, process.env.JWT_SECRET);
       return next();
     }
-  
     // 인증 실패
     catch (error) {
       // 유효기간이 초과된 경우

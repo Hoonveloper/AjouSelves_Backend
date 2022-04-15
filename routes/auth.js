@@ -34,15 +34,15 @@ router.post('/register', async function(req,res) {
     const password = encryption[0];
     const uservalue = [body.email, password, salt, body.phonenumber, body.nickname, body.status, body.socialtype, body.sex, body.birth, body.address, body.account, body.profilelink];
     DB.query(userquery,uservalue, (err,result,fileds) => {
-        if(err) console.log(err);
-	else{
-		console.log(req.body);
-        	res.json({status:"success"});
-	}
+        if(err){
+            console.log("user register fail");
+            res.status(400).json({ text: 'ErrorCode:400, 잘못된 요청입니다.' });
+        } 
+	    else{
+		    console.log("user register success");
+            res.json({status:"success"});
+	    }
     })
-        
-        
-    
 });
 
 const emailVerification = async function(req,res){
@@ -89,7 +89,6 @@ const emailVerification = async function(req,res){
 }
 
 //비밀번호 일치 확인 라우터
-// router.get('/verifypw', (req,res) => {
 const passwordverify = async function(req,res,next){
     const email = req.body.email;
     const pw = req.body.password;
@@ -99,8 +98,7 @@ const passwordverify = async function(req,res,next){
         const dbpw = data[0].password;
         const reqpw = [crypto.pbkdf2Sync(pw, dbsalt, 9999, 64, 'sha512').toString('base64')];
         if(reqpw == dbpw){
-            console.log("로그인 성공");
-            //res.json({status:"success"});
+            console.log("비밀번호 일치");
             next();
         }
         else{
@@ -108,7 +106,7 @@ const passwordverify = async function(req,res,next){
             res.json({status:"fail"});
         }
     }catch(e){
-        console.log(e);
+        console.log("Password error catch");
         res.status(400).json({ text: 'ErrorCode:400, 잘못된 요청입니다.' });
     }
     
@@ -154,9 +152,7 @@ router.get('/test', verifyToken, (req,res) => {
       });
 })
 
-router.use(passwordverify); // 비밀번호 검증 미들웨어 사용
-
-router.post('/login', async (req,res) => {
+router.post('/login', passwordverify ,async (req,res) => {
     
     const {email,password} = req.body;
     try{
@@ -170,15 +166,16 @@ router.post('/login', async (req,res) => {
             expiresIn: '30m',
             issuer : 'AjouSelves_Back',
         })
-
-        return res.json({
+        
+        console.log("로그인 성공");
+        res.json({
             code: 200,
             message: '토큰이 발급되었습니다.',
             token : token
-        })
+        }) 
     }
     catch(e){
-        console.log(e);
+        console.log("login error catch");
         res.status(400).json({ text: 'ErrorCode:400, 잘못된 요청입니다.' });
     }
 });
@@ -186,33 +183,3 @@ router.post('/login', async (req,res) => {
 
 router.post('/email',emailVerification);
 module.exports = router;
-
-
-// router.get('/login', (req,res) => {
-//     jwt.sign
-// })
-
-// user login 처리
-// router.post('/login', (req,res) => {
-//
-//})
-
-
-// var kakao = function(req,res){
-
-
-//     //카카오 로그인 코드
-//     // access 토큰 발급받아서 카카오한테 정보 얻고 jwt토큰 res에 담아서 넘겨주기.
-// }
-// var local = function (req,res){
-//     //로컬 로그인 코드
-//     // 비밀번호 암호화 후 db에 있는 암호랑 비교 후 맞다면 jwt토큰 발급
-//     // 비교 후 틀리다면 로그인 실패
-
-
-
-// }
-
-
-// module.exports.kakao=kakao;
-// module.exports.local=local;
