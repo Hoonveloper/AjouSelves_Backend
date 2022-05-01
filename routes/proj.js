@@ -73,7 +73,7 @@ var getproj= async function(req,res){
   const id = req.params.id;
   
   try{
-        const [proj]= await db.promise().query(`SELECT P.title,p.state,p.category,p.min_num, p.cur_num,p.required, p.explained, u.nickname, u.userid,u.profilelink FROM projs AS p INNER JOIN users AS u ON p.userid=u.userid WHERE p.projid=${id};`);
+        const [proj]= await db.promise().query(`SELECT p.title,p.state,p.category,p.min_num, p.cur_num,p.required, p.explained, p.created_at,u.nickname, u.userid,u.profilelink FROM projs AS p INNER JOIN users AS u ON p.userid=u.userid WHERE p.projid=${id};`);
         const [photos]= await db.promise().query(`SELECT * FROM photos WHERE projid=${id} ORDER BY thumbnail desc;`);
         console.log[photos];
         proj[0].photos= new Array();
@@ -106,13 +106,13 @@ var getproj= async function(req,res){
 var getALLproj= async function(req,res){
 //모든 project 정보 가져오는 코드
 try{
-    const [data] = await db.promise().query(`SELECT p.projid,p.title, p.state,p.category, p.created_at, u.userid, u.nickname,u.profilelink ,p.min_num,p.cur_num, ph.url FROM projs as p join users as u ON p.userid=u.userid INNER JOIN photo as ph ON ph.projid=p.projid ORDER BY created_at DESC`);
+    const [data] = await db.promise().query(`SELECT p.projid,p.title, p.state,p.category, p.created_at, u.userid, u.nickname,u.profilelink ,p.min_num,p.cur_num, ph.url FROM projs as p join users as u ON p.userid=u.userid LEFT JOIN photos as ph ON ph.projid=p.projid ORDER BY created_at DESC`);
     console.log(data);
     res.json(data);
 
 
-}catch{
-
+}catch(e){
+    console.log(e);
     console.log('getALLpost에서 error 발생!');
     res.status(400).json({ text: 'ErrorCode:400, 잘못된 요청입니다.' });
 }
