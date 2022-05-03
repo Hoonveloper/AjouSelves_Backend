@@ -83,10 +83,10 @@ router.put("/", verifyToken, (req, res) => {
   );
 });
 
-router.post("/paylink", verifyToken, async (req, res) => {
+router.put("/paylink", verifyToken, function (req, res) {
   const userid = req.decoded._id;
   const pay_link = req.body.paylink;
-  await DB.promise().query(
+  DB.query(
     `update users set paylink = '${pay_link}' where userid = ?`,
     userid,
     (err, result, fileds) => {
@@ -97,6 +97,89 @@ router.post("/paylink", verifyToken, async (req, res) => {
         console.log("paylink post success");
         res.json({ status: "success" });
       }
+    }
+  );
+});
+
+// 참여 굿즈 title 가져오기
+router.get("/attend", verifyToken, (req, res) => {
+  const userid = req.decoded._id;
+  DB.query(
+    `select projid from participants where userid=?`,
+    userid,
+    (err, result, fields) => {
+      const attend_proj = result.map((v) => v.projid);
+      console.log(attend_proj);
+      DB.query(
+        `select title from projs where projid in (${attend_proj})`,
+        (err, result, fields) => {
+          console.log(result);
+          res.json(result);
+        }
+      );
+    }
+  );
+});
+
+// 제작 굿즈 title 가져오기
+router.get("/create", verifyToken, (req, res) => {
+  const userid = req.decoded._id;
+  DB.query(
+    `select projid from projs where userid=?`,
+    userid,
+    (err, result, fileds) => {
+      const create_proj = result.map((v) => v.projid);
+      console.log(create_proj);
+      DB.query(
+        `select title from projs where projid in (${create_proj})`,
+        (err, result, fields) => {
+          const title_proj = result;
+          console.log(title_proj);
+          res.json(title_proj);
+        }
+      );
+    }
+  );
+});
+
+// 참여 굿즈 detail 가져오기
+router.get("/attend_detail", verifyToken, (req, res) => {
+  const userid = req.decoded._id;
+  DB.query(
+    `select projid from participants where userid=?`,
+    userid,
+    (err, result, fileds) => {
+      const create_proj = result.map((v) => v.projid);
+      console.log(create_proj);
+      DB.query(
+        `select *from projs where projid in (${create_proj})`,
+        (err, result, fields) => {
+          const title_proj = result;
+          console.log(title_proj);
+          res.json(title_proj);
+        }
+      );
+    }
+  );
+});
+
+// 제작 굿즈 detail 가져오기
+router.get("/create_detail", verifyToken, (req, res) => {
+  const userid = req.decoded._id;
+  DB.query(
+    `select projid from projs where userid=?`,
+    userid,
+    (err, result, fileds) => {
+      const create_proj = result.map((v) => v.projid);
+      console.log(create_proj);
+      DB.query(
+        `select *from projs where projid in (${create_proj})`,
+        (err, result, fields) => {
+          const title_proj = result;
+          console.log(title_proj);
+          res.json(title_proj);
+        }
+      );
     }
   );
 });

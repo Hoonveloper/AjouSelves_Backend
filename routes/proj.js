@@ -28,19 +28,19 @@ var searchprojbytitle = async function (req, res) {
   const title = req.body.title;
   console.log(title);
 
-  try{
-      const [data] = await db.promise().query(`SELECT p.projID,p.title,p.state,p.category,p.min_num, p.created_at, u.NICKNAME FROM projs AS p JOIN users as u ON p.userid=u.userid where p.title LIKE '%${title}%';`);
-      console.log(data);
-      res.json(data);
-  }catch{
-    
-      console.log('searchbytitle error 발생!');
-      res.status(400).json({ text: 'ErrorCode:400, 잘못된 요청입니다.' });
+  try {
+    const [data] = await db
+      .promise()
+      .query(
+        `SELECT p.projID,p.title,p.state,p.category,p.min_num, p.created_at, u.NICKNAME FROM projs AS p JOIN users as u ON p.userid=u.userid where p.title LIKE '%${title}%';`
+      );
+    console.log(data);
+    res.json(data);
+  } catch {
+    console.log("searchbytitle error 발생!");
+    res.status(400).json({ text: "ErrorCode:400, 잘못된 요청입니다." });
   }
-
-}
-
-
+};
 
 var getproj = async function (req, res) {
   //특정한 project 정보 가져오는 코드
@@ -89,7 +89,7 @@ var getALLproj = async function (req, res) {
     const [data] = await db
       .promise()
       .query(
-        `SELECT p.projid,p.title, p.state,p.category, p.created_at, u.userid, u.nickname,u.profilelink ,p.min_num,p.cur_num, ph.url FROM projs as p join users as u ON p.userid=u.userid INNER JOIN photo as ph ON ph.projid=p.projid ORDER BY created_at DESC`
+        `select p.projid,p.title, p.state,p.category, p.created_at, u.userid, u.nickname,u.profilelink ,p.min_num,p.cur_num, ph.url from projs as p join users as u on p.userid=u.userid inner join photo as ph on ph.projid=p.projid order by created_at desc`
       );
     console.log(data);
     res.json(data);
@@ -110,13 +110,11 @@ var addproj_nophoto = async function (req, res) {
   var required = {};
   required = req.body.required;
 
-  
-
   try {
     const data = await db
       .promise()
       .query(
-        `INSERT INTO projs(userid,title,category,min_num,explained,required) VALUES(${userid},'${title}','${category}',${min_num},'${explained}','${required}' )`
+        `insert into projs(userid,title,category,min_num,explained,required) values (${userid},'${title}','${category}',${min_num},'${explained}','${required}' )`
       );
     //console.log(data);
     res.json({ status: "success" });
