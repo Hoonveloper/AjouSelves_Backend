@@ -50,7 +50,7 @@ var getproj = async function (req, res) {
     const [proj] = await db
       .promise()
       .query(
-        `SELECT p.title,p.state,p.category,p.min_num, p.cur_num,p.required, p.explained, u.nickname, u.userid,u.profilelink FROM projs AS p INNER JOIN users AS u ON p.userid=u.userid WHERE p.projid=${id};`
+        `SELECT p.title,p.state,p.category,p.min_num, p.cur_num,p.required, p.explained, p.created_at,u.nickname, u.userid,u.profilelink FROM projs AS p INNER JOIN users AS u ON p.userid=u.userid WHERE p.projid=${id};`
       );
     const [photos] = await db
       .promise()
@@ -89,11 +89,12 @@ var getALLproj = async function (req, res) {
     const [data] = await db
       .promise()
       .query(
-        `select p.projid,p.title, p.state,p.category, p.created_at, u.userid, u.nickname,u.profilelink ,p.min_num,p.cur_num, ph.url from projs as p join users as u on p.userid=u.userid inner join photo as ph on ph.projid=p.projid order by created_at desc`
+        `SELECT p.projid,p.title, p.state,p.category, p.created_at, u.userid, u.nickname,u.profilelink ,p.min_num,p.cur_num, ph.url FROM projs as p join users as u ON p.userid=u.userid LEFT JOIN photos as ph ON ph.projid=p.projid ORDER BY created_at DESC`
       );
     console.log(data);
     res.json(data);
-  } catch {
+  } catch (e) {
+    console.log(e);
     console.log("getALLpost에서 error 발생!");
     res.status(400).json({ text: "ErrorCode:400, 잘못된 요청입니다." });
   }
@@ -110,11 +111,13 @@ var addproj_nophoto = async function (req, res) {
   var required = {};
   required = req.body.required;
 
+  required = JSON.stringify(required).replace(/[\']/g, /[\"]/g);
+
   try {
     const data = await db
       .promise()
       .query(
-        `insert into projs(userid,title,category,min_num,explained,required) values (${userid},'${title}','${category}',${min_num},'${explained}','${required}' )`
+        `INSERT INTO projs(userid,title,category,min_num,explained,required) VALUES(${userid},'${title}','${category}',${min_num},'${explained}','${required}' )`
       );
     //console.log(data);
     res.json({ status: "success" });
@@ -227,6 +230,7 @@ var editproj_nophoto = async function (req, res) {
     res.status(400).json({ text: "ErrorCode:400, 잘못된 요청입니다." });
   }
 };
+
 var editproj_onephoto = async function (req, res) {
   //추가해야할 것 : userid 가져와서 req에서 받은  userid값과 비교.
   const photos = req.file;
