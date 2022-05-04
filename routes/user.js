@@ -87,7 +87,7 @@ router.put("/", verifyToken, (req, res) => {
   );
 });
 
-router.put("/paylink", verifyToken, function (req, res) {
+router.put("/set_paylink", verifyToken, function (req, res) {
   const userid = req.decoded._id;
   const pay_link = req.body.paylink;
   DB.query(
@@ -106,7 +106,7 @@ router.put("/paylink", verifyToken, function (req, res) {
 });
 
 // 참여 굿즈 title 가져오기
-router.get("/attend", verifyToken, (req, res) => {
+router.get("/join", verifyToken, (req, res) => {
   const userid = req.decoded._id;
   DB.query(
     `select projid from participants where userid=?`,
@@ -147,7 +147,7 @@ router.get("/create", verifyToken, (req, res) => {
 });
 
 // 참여 굿즈 detail 가져오기
-router.get("/attend_detail", verifyToken, (req, res) => {
+router.get("/join_detail", verifyToken, (req, res) => {
   const userid = req.decoded._id;
   DB.query(
     `select projid from participants where userid=?`,

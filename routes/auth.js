@@ -32,13 +32,14 @@ router.post("/register", async function (req, res) {
   const body = req.body;
   const encryption = createHashedPassword(body.password);
   const userquery =
-    "insert into users (email, password, salt, phonenumber, nickname, status, socialtype, sex, birth, address, account, profilelink) values (?,?,?,?,?,?,?,?,?,?,?,?)";
+    "insert into users (email, password, salt, name, phonenumber, nickname, status, socialtype, sex, birth, address, account, profilelink) values (?,?,?,?,?,?,?,?,?,?,?,?)";
   const salt = encryption[1];
   const password = encryption[0];
   const uservalue = [
     body.email,
     password,
     salt,
+    body.name,
     body.phonenumber,
     body.nickname,
     body.status,
@@ -160,18 +161,6 @@ router.get("/verifyid", (req, res) => {
     토큰을 받게 되면 그 userid로 필요한 정보를 받는다.
 */
 
-router.get("/test", verifyToken, (req, res) => {
-  const user_id = req.decoded._id;
-  console.log("Token is ok");
-  res.status(200).json({
-    code: 200,
-    message: "토큰은 정상입니다.",
-    data: {
-      _id: user_id,
-    },
-  });
-});
-
 router.post("/login", passwordverify, async (req, res) => {
   const { email, password } = req.body;
   try {
@@ -203,6 +192,18 @@ router.post("/login", passwordverify, async (req, res) => {
     console.log("login error catch");
     res.status(400).json({ text: "ErrorCode:400, 잘못된 요청입니다." });
   }
+});
+
+router.get("/token_test", verifyToken, (req, res) => {
+  const user_id = req.decoded._id;
+  console.log("Token is ok");
+  res.status(200).json({
+    code: 200,
+    message: "토큰은 정상입니다.",
+    data: {
+      _id: user_id,
+    },
+  });
 });
 
 router.post("/email", emailVerification);
