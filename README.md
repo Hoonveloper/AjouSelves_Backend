@@ -11,7 +11,9 @@
 
 [댓글_API 명세서.pdf](https://drive.google.com/file/d/1yqcUUEhEiQjXxWQK6CYZ8Nm8hnuTASNL/view?usp=sharing)
 
-[User & Auth API 명세서.pdf](https://drive.google.com/file/d/1zNP6Vy5Sev_XSWi8pT7yAAIA7OwsdTdl/view?usp=sharing)
+[Auth API 명세서.pdf](https://drive.google.com/file/d/12BQ2qivHRDQc_1_M-IXMFd6jlCKrzHs_/view?usp=sharing)
+
+[User API 명세서.pdf](https://drive.google.com/file/d/15Md3mkO29dWH4nefDCo90sjfeXDNEBTW/view?usp=sharing)
 
 
 ## initial setting
