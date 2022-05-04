@@ -9,11 +9,11 @@ DB.connect();
 router.use(express.urlencoded({ extended: true }));
 router.use(express.json());
 
-// user의 고유 id를 받아 user의 정보 db에서 보내준다.
+// mypage에서 회원정보 수정을 위해 기존의 정보를 가져오는 API
 router.get("/", verifyToken, (req, res) => {
   const userid = req.decoded._id;
   DB.query(
-    `select *from users where userid = ?`,
+    `select email,name,phonenumber,nickname,status,birth,address,account,profilelink from users where userid = ?`,
     userid,
     (err, result, fileds) => {
       if (err) {
@@ -27,21 +27,23 @@ router.get("/", verifyToken, (req, res) => {
   );
 });
 
-// 모든 user의  정보를 보내준다. 임시로 만들어봄
+// 모든 user의  정보를 얻어온다. 개발을 위해 임시로 구현
 router.get("/all", (req, res) => {
-  DB.query("select *from users where userid > 1", (err, result, fileds) => {
-    if (err) {
-      console.log("all user get fail");
-      res.status(400).json({ text: "ErrorCode:400, 잘못된 요청입니다." });
-    } else {
-      console.log("all user get success");
-      res.json(result);
+  DB.query(
+    "select email,name,phonenumber,nickname,status,birth,address,account,profilelink from users where userid > 1",
+    (err, result, fileds) => {
+      if (err) {
+        console.log("all user get fail");
+        res.status(400).json({ text: "ErrorCode:400, 잘못된 요청입니다." });
+      } else {
+        console.log("all user get success");
+        res.json(result);
+      }
     }
-  });
+  );
 });
 
-// user의 고유아이디를 받아 DB에서 관련된 모든 정보를 삭제한다.(회원탈퇴)
-// url에 id를 받을지 아니면 값으로 요청받을지 고민이 필요해보인다.
+// mypage에서 회원탈퇴를 진행할때 DB에서 삭제하는 API
 router.delete("/", verifyToken, (req, res) => {
   const userid = req.decoded._id;
   DB.query(
@@ -64,12 +66,14 @@ router.put("/", verifyToken, (req, res) => {
   const userid = req.decoded._id;
   const phonenumber = req.body.phonenumber;
   const nickname = req.body.nickname;
+  const status = req.body.status;
   const birth = req.body.birth;
   const address = req.body.address;
   const account = req.body.account;
+  const profilelink = req.body.profilelink;
 
   DB.query(
-    `update users set phonenumber = '${phonenumber}', nickname = '${nickname}', birth = '${birth}', address = '${address}', account = '${account}' where userid = ?`,
+    `update users set phonenumber = '${phonenumber}', nickname = '${nickname}', status = '${status}', birth = '${birth}', address = '${address}', account = '${account}', profilelink = '${profilelink}' where userid = ?`,
     userid,
     (err, result, fileds) => {
       if (err) {
