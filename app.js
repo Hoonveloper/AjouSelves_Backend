@@ -1,34 +1,30 @@
-
-
 // Express 기본 모듈 불러오기
-const fs=require('fs');
-var express = require('express')
-  , http = require('http')
-  , path = require('path');
+const fs = require("fs");
+var express = require("express"),
+  http = require("http"),
+  path = require("path");
 
 // Express의 미들웨어 불러오기
-var bodyParser = require('body-parser')
-  , cookieParser = require('cookie-parser')
-  , static = require('serve-static')
-  , errorHandler = require('errorhandler');
+var bodyParser = require("body-parser"),
+  cookieParser = require("cookie-parser"),
+  static = require("serve-static"),
+  errorHandler = require("errorhandler");
 
 // 에러 핸들러 모듈 사용
-var expressErrorHandler = require('express-error-handler');
+var expressErrorHandler = require("express-error-handler");
 
 // Session 미들웨어 불러오기
-var expressSession = require('express-session');
-  
+var expressSession = require("express-session");
 
 //===== Passport 사용 =====//
-var passport = require('passport');
-var flash = require('connect-flash');
-
+var passport = require("passport");
+var flash = require("connect-flash");
 
 // 모듈로 분리한 설정 파일 불러오기
-var config = require('./config/config');
+var config = require("./config/config");
 
 // 모듈로 분리한 데이터베이스 파일 불러오기
-var database = require('./database/maria');
+var database = require("./database/maria");
 
 // 라우터로 정리한 기능 불러오기
 var post = require("./routes/post");
@@ -36,50 +32,50 @@ var proj = require("./routes/proj");
 var user = require("./routes/user");
 const auth = require("./routes/auth");
 var comment = require("./routes/comment");
-const { fstat } = require('fs');
-const cors = require('cors');
+const { fstat } = require("fs");
+const cors = require("cors");
 // 익스프레스 객체 생성
 var app = express();
 app.use(cors());
 
 //===== 뷰 엔진 설정 =====//
-app.set('views', __dirname + '/views');
-app.set('view engine', 'ejs');
-console.log('뷰 엔진이 ejs로 설정되었습니다.');
-
+app.set("views", __dirname + "/views");
+app.set("view engine", "ejs");
+console.log("뷰 엔진이 ejs로 설정되었습니다.");
 
 //===== 서버 변수 설정 및 static으로 public 폴더 설정  =====//
-console.log('config.server_port : %d', config.server_port);
-app.set('port', config.server_port || 3000);
- 
+console.log("config.server_port : %d", config.server_port);
+app.set("port", config.server_port || 3000);
 
 // body-parser를 이용해 application/x-www-form-urlencoded 파싱
-app.use(bodyParser.urlencoded({ extended: false }))
+app.use(bodyParser.urlencoded({ extended: false }));
 
 // body-parser를 이용해 application/json 파싱
-app.use(bodyParser.json())
+app.use(bodyParser.json());
 
 // public 폴더를 static으로 오픈
-app.use('/public', static(path.join(__dirname, 'public')));
+app.use("/public", static(path.join(__dirname, "public")));
 
 // cookie-parser 설정
 app.use(cookieParser());
 
 // 세션 설정
-app.use(expressSession({
-	secret:'my key',
-	resave:true,
-	saveUninitialized:true
-}));
+app.use(
+  expressSession({
+    secret: "my key",
+    resave: true,
+    saveUninitialized: true,
+  })
+);
 
 // 라우터로 정리한 기능 사용하기
-app.use("/post",post);
-app.use("/proj",proj);
+app.use("/post", post);
+app.use("/proj", proj);
 app.use("/user", user);
 app.use("/auth", auth);
-app.use("/comment",comment);
-app.get("/test",(req,res) => {
-	res.json({status:"sex"});
+app.use("/comment", comment);
+app.get("/test", (req, res) => {
+  res.json({ status: "sex" });
 });
 
 //===== Passport 사용 설정 =====//
@@ -88,11 +84,8 @@ app.use(passport.initialize());
 app.use(passport.session());
 app.use(flash());
 
-
-
 //라우팅 정보를 읽어들여 라우팅 설정
 var router = express.Router();
-
 
 // 패스포트 설정
 //var configPassport = require('./config/passport');
@@ -102,46 +95,42 @@ var router = express.Router();
 //var userPassport = require('./routes/user_passport');
 //userPassport(router, passport);
 
-
 //===== 404 에러 페이지 처리 =====//
 var errorHandler = expressErrorHandler({
- static: {
-   '404': './public/404.html'
- }
+  static: {
+    404: "./public/404.html",
+  },
 });
 
-app.use( expressErrorHandler.httpError(404) );
-app.use( errorHandler );
-
+app.use(expressErrorHandler.httpError(404));
+app.use(errorHandler);
 
 //===== 서버 시작 =====//
 
 //확인되지 않은 예외 처리 - 서버 프로세스 종료하지 않고 유지함
-process.on('uncaughtException', function (err) {
-	console.log('uncaughtException 발생함 : ' + err);
-	console.log('서버 프로세스 종료하지 않고 유지함.');
-	
-	console.log(err.stack);
+process.on("uncaughtException", function (err) {
+  console.log("uncaughtException 발생함 : " + err);
+  console.log("서버 프로세스 종료하지 않고 유지함.");
+
+  console.log(err.stack);
 });
 
 // 프로세스 종료 시에 데이터베이스 연결 해제
-process.on('SIGTERM', function () {
-    console.log("프로세스가 종료됩니다.");
-    app.close();
+process.on("SIGTERM", function () {
+  console.log("프로세스가 종료됩니다.");
+  app.close();
 });
 
-app.on('close', function () {
-	console.log("Express 서버 객체가 종료됩니다.");
-	if (database.db) {
-		database.db.close();
-	}
+app.on("close", function () {
+  console.log("Express 서버 객체가 종료됩니다.");
+  if (database.db) {
+    database.db.close();
+  }
 });
 
-// 시작된 서버 객체를 리턴받도록 합니다. 
-var server = http.createServer(app).listen(app.get('port'), function(){
-
-	const dir= './photo';
-	if( !fs.existsSync(dir)) fs.mkdirSync(dir);
-	console.log('서버가 시작되었습니다. 포트 : ' + app.get('port'));
-   
+// 시작된 서버 객체를 리턴받도록 합니다.
+var server = http.createServer(app).listen(app.get("port"), function () {
+  const dir = "./photo";
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir);
+  console.log("서버가 시작되었습니다. 포트 : " + app.get("port"));
 });

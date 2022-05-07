@@ -16,6 +16,7 @@ const generateRandom = function (min, max) {
   var ranNum = Math.floor(Math.random() * (max - min + 1)) + min;
   return ranNum;
 };
+
 // 비밀번호 암호화(crypto, salt 사용)
 function createHashedPassword(plainPassword) {
   const salt = crypto.randomBytes(64).toString("base64");
@@ -103,7 +104,7 @@ const emailVerification = async function (req, res) {
   }
 };
 
-//비밀번호 일치 확인 라우터
+//비밀번호 일치 확인 미들웨어
 const passwordverify = async function (req, res, next) {
   const email = req.body.email;
   const pw = req.body.password;
@@ -112,12 +113,12 @@ const passwordverify = async function (req, res, next) {
       `select salt, password from users where email = ?`,
       email
     );
-    const dbsalt = data[0].salt;
-    const dbpw = data[0].password;
-    const reqpw = [
-      crypto.pbkdf2Sync(pw, dbsalt, 9999, 64, "sha512").toString("base64"),
+    const db_salt = data[0].salt;
+    const db_pw = data[0].password;
+    const req_pw = [
+      crypto.pbkdf2Sync(pw, db_salt, 9999, 64, "sha512").toString("base64"),
     ];
-    if (reqpw == dbpw) {
+    if (req_pw == db_pw) {
       console.log("비밀번호 일치");
       next();
     } else {
@@ -125,29 +126,34 @@ const passwordverify = async function (req, res, next) {
       res.json({ status: "fail" });
     }
   } catch (e) {
-    console.log("Password error catch");
+    console.log("Password verify error");
     res.status(400).json({ text: "ErrorCode:400, 잘못된 요청입니다." });
   }
 };
 
 // email 중복 여부 확인
 router.get("/verifyid", (req, res) => {
-  const reqemail = req.body.email;
+  const req_email = req.body.email;
   DB.query(
     `select email from users where email = ?`,
-    reqemail,
+    req_email,
     (err, result, fields) => {
-      if (result[0] == undefined) {
-        console.log("이 이메일은 사용 가능합니다.");
-        res.json({ status: "success" });
+      if (err) {
+        console.log("유저 이메일이 없습니다.");
+        res.status(400).json({ text: "ErrorCode:400, 잘못된 요청입니다." });
       } else {
-        const idverify = result[0].email;
-        if (reqemail == idverify) {
-          console.log("이메일이 중복됩니다. 다른 이메일을 입력해주세요");
-          res.status(400).json({ text: "ErrorCode:400, 잘못된 요청입니다." });
-        } else {
+        if (result[0] == undefined) {
           console.log("이 이메일은 사용 가능합니다.");
           res.json({ status: "success" });
+        } else {
+          const idverify = result[0].email;
+          if (req_email == idverify) {
+            console.log("이메일이 중복됩니다. 다른 이메일을 입력해주세요");
+            res.status(400).json({ text: "ErrorCode:400, 잘못된 요청입니다." });
+          } else {
+            console.log("이 이메일은 사용 가능합니다.");
+            res.json({ status: "success" });
+          }
         }
       }
     }
@@ -168,7 +174,6 @@ router.post("/login", passwordverify, async (req, res) => {
       `select userid from users where email=?`,
       email
     );
-    console.log(data[0].userid);
     const user_id = data[0].userid;
 
     const token = jwt.sign(
@@ -177,7 +182,7 @@ router.post("/login", passwordverify, async (req, res) => {
       },
       process.env.JWT_SECRET,
       {
-        expiresIn: "30m",
+        expiresIn: "1h",
         issuer: "AjouSelves_Back",
       }
     );
@@ -189,12 +194,12 @@ router.post("/login", passwordverify, async (req, res) => {
       token: token,
     });
   } catch (e) {
-    console.log("login error catch");
+    console.log("login error");
     res.status(400).json({ text: "ErrorCode:400, 잘못된 요청입니다." });
   }
 });
 
-router.get("/token_test", verifyToken, (req, res) => {
+router.get("/token-test", verifyToken, (req, res) => {
   const user_id = req.decoded._id;
   console.log("Token is ok");
   res.status(200).json({
