@@ -33,7 +33,7 @@ router.post("/register", async function (req, res) {
   const body = req.body;
   const encryption = createHashedPassword(body.password);
   const userquery =
-    "insert into users (email, password, salt, name, phonenumber, nickname, status, socialtype, sex, birth, address, account, profilelink) values (?,?,?,?,?,?,?,?,?,?,?,?)";
+    "insert into users (email, password, salt, name, phonenumber, nickname, status, socialtype, sex, birth, address, account, profilelink) values (?,?,?,?,?,?,?,?,?,?,?,?,?)";
   const salt = encryption[1];
   const password = encryption[0];
   const uservalue = [
@@ -54,6 +54,7 @@ router.post("/register", async function (req, res) {
   DB.query(userquery, uservalue, (err, result, fileds) => {
     if (err) {
       console.log("user register fail");
+      console.log(err);
       res.status(400).json({ text: "ErrorCode:400, 잘못된 요청입니다." });
     } else {
       console.log("user register success");
