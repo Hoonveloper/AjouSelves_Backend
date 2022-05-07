@@ -4,11 +4,11 @@
 
 ## API 명세서
 
-[굿즈 프로젝트 API 명세서.pdf](https://drive.google.com/file/d/1DJyNPbUen_H8WehWUvjg0ChyNh03LHJW/view?usp=sharing)
+[굿즈 프로젝트 API 명세서.pdf](https://mature-girdle-388.notion.site/API-0dc639a485dc424ca8db2b4e807761f3)
 
-[커뮤니티 게시글 API 명세서.pdf](https://drive.google.com/file/d/1-sO9aD8kMA-eY5Yekj3EPju4YxCT9cHc/view?usp=sharing)
+[커뮤니티 게시글 API 명세서.pdf](https://mature-girdle-388.notion.site/41c6e62d7bfa46c5a3eeba0412bb5b7f)
 
-[댓글\_API 명세서.pdf](https://drive.google.com/file/d/1yqcUUEhEiQjXxWQK6CYZ8Nm8hnuTASNL/view?usp=sharing)
+[댓글\_API 명세서.pdf](https://mature-girdle-388.notion.site/API-76c8d2718f654d808594535277bbd3c5)
 
 [Auth API 명세서.pdf](https://drive.google.com/file/d/12BQ2qivHRDQc_1_M-IXMFd6jlCKrzHs_/view?usp=sharing)
 
