@@ -55,7 +55,9 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
 // public 폴더를 static으로 오픈
+app.use("/photo", static(path.join(__dirname, "photo")));
 app.use("/public", static(path.join(__dirname, "public")));
+
 
 // cookie-parser 설정
 app.use(cookieParser());
