@@ -135,8 +135,8 @@ const addproj_onephoto = async function (req, res) {
   const min_num = req.body.min_num;
   const category = req.body.category;
   var required = {};
-  required = req.body.required;
-
+  
+  required = JSON.stringify(required).replace(/[\']/g, /[\"]/g);
   try {
     const [data] = await db
       .promise()
@@ -169,7 +169,7 @@ const addproj_multiphoto = async function (req, res) {
   const min_num = req.body.min_num;
   const category = req.body.category;
   var required = {};
-  required = req.body.required;
+  required = JSON.stringify(required).replace(/[\']/g, /[\"]/g);
 
   console.log(req.files);
   try {
@@ -214,27 +214,27 @@ var editproj_nophoto = async function (req, res) {
   const category = req.body.category;
 
   var required = {};
-  required = req.body.required;
-  console.log(req.body.required);
+  required = JSON.stringify(req.body.required);
+  console.log(required);
   
   try {
     const [checkID]= await db.promise().query(`select userid from projs where projid=${projid};`);
-    console.log(checkID);
-    if(checkID.userid!=userid){
+    console.log(checkID[0].userid);
+    if(checkID[0].userid!=userid){
       res.json({status:"fail",text:"글 작성자만 수정이 가능합니다."});
     }
     else{
       const data = await db
         .promise()
         .query(
-          `UPDATE projs SET title='${title}', explained='${explained}',min_num=${min_num},category='${category}',required='${req.body.required}'  WHERE projid=${projid};`
+          `UPDATE projs SET title='${title}', explained='${explained}',min_num=${min_num},category='${category}',required='${required}'  WHERE projid=${projid};`
         );
       res.json({ text: "success" });
     }
   } catch (e) {
     console.log(e);
     console.log("editpost에서 error 발생!");
-    res.status(400).json({ text: "ErrorCode:400, 잘못된 요청입니다." });
+    res.status(400).json({ text: "ErrorCode:400, 잘못된 요청입니다." ,e});
   }
 };
 
@@ -248,13 +248,13 @@ var editproj_onephoto = async function (req, res) {
   const min_num = req.body.min_num;
   const category = req.body.category;
   var required = {};
-  required = req.body.required;
+  required = JSON.stringify(req.body.required);
 
   const photo_url = `/photo/${photos.filename}`;
   try {
     const [checkID]= await db.promise().query(`select userid from projs where projid=${projid};`);
     console.log(checkID);
-    if(checkID.userid!=userid){
+    if(checkID[0].userid!=userid){
       res.json({status:"fail",text:"글 작성자만 수정이 가능합니다."});
     }
 
@@ -287,13 +287,13 @@ var editproj_multiphoto = async function (req, res) {
   const min_num = req.body.min_num;
   const category = req.body.category;
   var required = {};
-  required = req.body.required;
+  required = JSON.stringify(req.body.required);
 
   const photo_url = `/photo/${photos.filename}`;
   try {
     const [checkID]= await db.promise().query(`select userid from projs where projid=${projid};`);
     console.log(checkID);
-    if(checkID.userid!=userid){
+    if(checkID[0].userid!=userid){
       res.json({status:"fail",text:"글 작성자만 수정이 가능합니다."});
     }
     else{
@@ -371,7 +371,7 @@ var delproj = async function (req, res) {
   try {
     const [checkID]= await db.promise().query(`select userid from projs where projid=${projid};`);
     console.log(checkID);
-    if(checkID.userid!=userid){
+    if(checkID[0].userid!=userid){
       res.json({status:"fail",text:"글 작성자만 삭제가 가능합니다."});
     }
     else{
@@ -411,7 +411,7 @@ const join = async function (req, res) {
       );
     console.log(data.length);
     if (data.length!=0) { //이미 참여 한 경우 +1안함.
-      res.status(400).json({ status:"fail",text: "already joined" });
+      res.status(400).json({ status:"fail",text: "이미 굿즈를 구매하였습니다." });
     } else { //새로 참여하는 경우.
       var result = await db
       .promise()
