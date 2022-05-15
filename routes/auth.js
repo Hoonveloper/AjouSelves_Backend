@@ -1,38 +1,24 @@
 const express = require("express");
 const router = express.Router();
-const crypto = require("crypto");
-const jwt = require("jsonwebtoken");
+//const crypto = require("crypto"); // 비밀번호 암호화 모듈
+const jwt = require("jsonwebtoken"); // jwt 모듈
+require("dotenv").config(); // jwt secret key value
+
+const { smtpTransport } = require("../config/email"); // email 인증을 위한 사용자 정보
+const { verifyToken } = require("./tokenmiddleware"); // Token 검증 미들웨어
+const { verifypassword } = require("./passmiddleware"); // Password 검증 미들웨어
+const authmiddleware = require("./authmiddleware");
 const DB = require("../database/maria"); // DB 정보 가져오기
-const { smtpTransport } = require("../config/email");
-require("dotenv").config(); // jwt secret key 가져오기
-const { verifyToken } = require("./authmiddleware");
-const { verifypassword } = require("./passmiddleware");
+DB.connect();
 
 //body-parser
 router.use(express.urlencoded({ extended: true }));
 router.use(express.json());
 
-//인증번호 생성함수.
-const generateRandom = function (min, max) {
-  var ranNum = Math.floor(Math.random() * (max - min + 1)) + min;
-  return ranNum;
-};
-
-// 비밀번호 암호화(crypto, salt 사용)
-function createHashedPassword(plainPassword) {
-  const salt = crypto.randomBytes(64).toString("base64");
-  return [
-    crypto
-      .pbkdf2Sync(plainPassword, salt, 9999, 64, "sha512")
-      .toString("base64"),
-    salt,
-  ];
-}
-
 // 회원가입 형식에 맞는 json 파일을 받아 이를 user db에 넣어준다.
 router.post("/register", async function (req, res) {
   const body = req.body;
-  const encryption = createHashedPassword(body.password);
+  const encryption = authmiddleware.createHashedPassword(req.body.password);
   const userquery =
     "insert into users (email, password, salt, name, phonenumber, nickname, status, socialtype, sex, birth, address, account, profilelink) values (?,?,?,?,?,?,?,?,?,?,?,?,?)";
   const salt = encryption[1];
@@ -66,12 +52,12 @@ router.post("/register", async function (req, res) {
 
 router.post("/email", async function (req, res) {
   const email = req.body.email;
-  const number = generateRandom(111111, 999999);
+  const number = authmiddleware.generateRandom();
   const mailoptions = {
     from: "ajouselves@naver.com",
     to: email,
-    subject: "[Goods By us] 인증 관련 메일입니다.",
-    text: "오른쪽 숫자 6자리를 입력해주세요 : " + number,
+    subject: "[Goods By us] 인증 메일입니다.",
+    text: "인증번호 6자리를 입력해주세요 : " + number,
   };
 
   try {

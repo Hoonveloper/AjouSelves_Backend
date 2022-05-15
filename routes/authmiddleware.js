@@ -1,30 +1,34 @@
-const jwt = require("jsonwebtoken");
-require('dotenv').config(); // jwt secret key 가져오기
+const express = require("express");
+const router = express.Router();
+const crypto = require("crypto");
 
+//body-parser
+router.use(express.urlencoded({ extended: true }));
+router.use(express.json());
 
-exports.verifyToken = (req, res, next) => {
-    // 인증 완료
+module.exports = {
+  generateRandom: () => {
     try {
-      // 요청 헤더에 저장된 토큰(req.headers.authorization)과 비밀키를 사용하여 토큰 반환
-      req.decoded = jwt.verify(req.headers.authorization, process.env.JWT_SECRET);
-      return next();
+      const max = 999999;
+      const min = 111111;
+      const ranNum = Math.floor(Math.random() * (max - min + 1)) + min;
+      return ranNum;
+    } catch (error) {
+      console.log("난수생성에 실패했습니다." + error);
     }
-    // 인증 실패
-    catch (error) {
-      // 유효기간이 초과된 경우
-      if (error.name === 'TokenExpiredError') {
-        console.log("Token timeout");
-        return res.status(419).json({
-          code: 419,
-          message: '토큰이 만료되었습니다.'
-        });
-      }
-  
-      // 토큰의 비밀키가 일치하지 않는 경우
-      console.log("Invalid token");
-      return res.status(401).json({
-        code: 401,
-        message: '유효하지 않은 토큰입니다.'
-      });
+  },
+
+  createHashedPassword: (plainPassword) => {
+    try {
+      const salt = crypto.randomBytes(64).toString("base64");
+      return [
+        crypto
+          .pbkdf2Sync(plainPassword, salt, 9999, 64, "sha512")
+          .toString("base64"),
+        salt,
+      ];
+    } catch (error) {
+      console.log("비밀번호 암호화에 실패했습니다." + error);
     }
-  }
+  },
+};
