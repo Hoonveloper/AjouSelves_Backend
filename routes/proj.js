@@ -4,7 +4,7 @@ const jwt = require("jsonwebtoken");
 const db = require("../database/maria");
 db.connect();
 const multer = require("multer");
-const { verifyToken } = require("./authmiddleware");
+const { verifyToken } = require("./tokenmiddleware");
 
 const storage = multer.diskStorage({
   destination: function (req, file, callback) {
@@ -135,7 +135,7 @@ const addproj_onephoto = async function (req, res) {
   const min_num = req.body.min_num;
   const category = req.body.category;
   var required = {};
-  
+
   required = JSON.stringify(required).replace(/[\']/g, /[\"]/g);
   try {
     const [data] = await db
@@ -216,14 +216,15 @@ var editproj_nophoto = async function (req, res) {
   var required = {};
   required = JSON.stringify(req.body.required);
   console.log(required);
-  
+
   try {
-    const [checkID]= await db.promise().query(`select userid from projs where projid=${projid};`);
+    const [checkID] = await db
+      .promise()
+      .query(`select userid from projs where projid=${projid};`);
     console.log(checkID[0].userid);
-    if(checkID[0].userid!=userid){
-      res.json({status:"fail",text:"글 작성자만 수정이 가능합니다."});
-    }
-    else{
+    if (checkID[0].userid != userid) {
+      res.json({ status: "fail", text: "글 작성자만 수정이 가능합니다." });
+    } else {
       const data = await db
         .promise()
         .query(
@@ -234,15 +235,14 @@ var editproj_nophoto = async function (req, res) {
   } catch (e) {
     console.log(e);
     console.log("editpost에서 error 발생!");
-    res.status(400).json({ text: "ErrorCode:400, 잘못된 요청입니다." ,e});
+    res.status(400).json({ text: "ErrorCode:400, 잘못된 요청입니다.", e });
   }
 };
 
 var editproj_onephoto = async function (req, res) {
-  
   const photos = req.file;
   const projid = req.params.id;
-  const userid= req.decoded._id;
+  const userid = req.decoded._id;
   const title = req.body.title;
   const explained = req.body.explained;
   const min_num = req.body.min_num;
@@ -252,13 +252,13 @@ var editproj_onephoto = async function (req, res) {
 
   const photo_url = `/photo/${photos.filename}`;
   try {
-    const [checkID]= await db.promise().query(`select userid from projs where projid=${projid};`);
+    const [checkID] = await db
+      .promise()
+      .query(`select userid from projs where projid=${projid};`);
     console.log(checkID);
-    if(checkID[0].userid!=userid){
-      res.json({status:"fail",text:"글 작성자만 수정이 가능합니다."});
-    }
-
-    else{
+    if (checkID[0].userid != userid) {
+      res.json({ status: "fail", text: "글 작성자만 수정이 가능합니다." });
+    } else {
       await db.promise().query(`DELETE from photos where projid=${projid};`); //본래 있던 사진 삭제.
       await db
         .promise()
@@ -291,12 +291,13 @@ var editproj_multiphoto = async function (req, res) {
 
   const photo_url = `/photo/${photos.filename}`;
   try {
-    const [checkID]= await db.promise().query(`select userid from projs where projid=${projid};`);
+    const [checkID] = await db
+      .promise()
+      .query(`select userid from projs where projid=${projid};`);
     console.log(checkID);
-    if(checkID[0].userid!=userid){
-      res.json({status:"fail",text:"글 작성자만 수정이 가능합니다."});
-    }
-    else{
+    if (checkID[0].userid != userid) {
+      res.json({ status: "fail", text: "글 작성자만 수정이 가능합니다." });
+    } else {
       await db.promise().query(`DELETE from photos where projid=${projid};`); //본래 있던 사진 삭제.
       photos.forEach(async (photo, idx) => {
         const photo_url = `/photo/${photo.filename}`;
@@ -326,7 +327,7 @@ var editproj_multiphoto = async function (req, res) {
     res.status(400).json({ status: "fail" });
   }
 };
-const edit_state =async function (req, res) {
+const edit_state = async function (req, res) {
   /*판매자가 status 변경 하는 경우
   status 1. 모집중
   status 2. 결제중
@@ -341,40 +342,53 @@ const edit_state =async function (req, res) {
   const projid = req.params.id;
   const state = req.body.state;
 
-  try{
-    const [isCreater]= await db.promise().query(`select state from projs where projid=${projid} AND userid=${userid};`);
+  try {
+    const [isCreater] = await db
+      .promise()
+      .query(
+        `select state from projs where projid=${projid} AND userid=${userid};`
+      );
     console.log(isCreater);
-    if (isCreater.length==0){ //판매자가 아닌 경우
-      res.json({status:"fail",text:"판매자가 아닙니다. "});
+    if (isCreater.length == 0) {
+      //판매자가 아닌 경우
+      res.json({ status: "fail", text: "판매자가 아닙니다. " });
+    } else if (
+      isCreater[0].state == state ||
+      Math.abs(isCreater[0].state - state) >= 2
+    ) {
+      // 같은 status로 변경 or status 2단계 이상 수정하려는 경우
+      res.json({
+        status: "fail",
+        text: "프로젝트 상태 수정에 오류가 있습니다.",
+      });
+    } else {
+      // state 수정 코드
+      await db
+        .promise()
+        .query(`UPDATE projs SET state='${state}' WHERE projid=${projid}; `);
+      res.json({
+        status: "success",
+        text: "프로젝트 상태 수정이 완료되었습니다.",
+      });
     }
-    else if (isCreater[0].state==state || Math.abs(isCreater[0].state- state) >=2 ){ // 같은 status로 변경 or status 2단계 이상 수정하려는 경우
-      res.json({status:"fail",text:"프로젝트 상태 수정에 오류가 있습니다."});
-    }
-    else{ // state 수정 코드
-      await db.promise().query(`UPDATE projs SET state='${state}' WHERE projid=${projid}; `)
-      res.json({status:"success",text:"프로젝트 상태 수정이 완료되었습니다."});
-    }
-
-
-
-  }catch(e){
+  } catch (e) {
     console.log(e);
     res.status(400).json({ text: "ErrorCode:400, 잘못된 요청입니다." });
   }
-
-}
+};
 var delproj = async function (req, res) {
   //project 정보 삭제
   //사진까지 삭제
-  const userid= req.decoded._id;
+  const userid = req.decoded._id;
   const projid = req.params.id;
   try {
-    const [checkID]= await db.promise().query(`select userid from projs where projid=${projid};`);
+    const [checkID] = await db
+      .promise()
+      .query(`select userid from projs where projid=${projid};`);
     console.log(checkID);
-    if(checkID[0].userid!=userid){
-      res.json({status:"fail",text:"글 작성자만 삭제가 가능합니다."});
-    }
-    else{
+    if (checkID[0].userid != userid) {
+      res.json({ status: "fail", text: "글 작성자만 삭제가 가능합니다." });
+    } else {
       const data = await db
         .promise()
         .query(`DELETE FROM projs WHERE projid=${projid};`);
@@ -401,7 +415,7 @@ const join = async function (req, res) {
   const projid = req.params.id;
   console.log(userid);
   console.log(projid);
-  
+
   //var cur_num= req.body.cur_num;
   try {
     const [data] = await db
@@ -410,12 +424,16 @@ const join = async function (req, res) {
         `select * from participants WHERE userid=${userid} AND projid=${projid}`
       );
     console.log(data.length);
-    if (data.length!=0) { //이미 참여 한 경우 +1안함.
-      res.status(400).json({ status:"fail",text: "이미 굿즈를 구매하였습니다." });
-    } else { //새로 참여하는 경우.
+    if (data.length != 0) {
+      //이미 참여 한 경우 +1안함.
+      res
+        .status(400)
+        .json({ status: "fail", text: "이미 굿즈를 구매하였습니다." });
+    } else {
+      //새로 참여하는 경우.
       var result = await db
-      .promise()
-      .query(`select cur_num from projs WHERE projid=${projid}`);
+        .promise()
+        .query(`select cur_num from projs WHERE projid=${projid}`);
       const cur_num = result[0][0].cur_num;
       await db
         .promise()
@@ -449,27 +467,29 @@ const leave = async function (req, res) {
   console.log(projid);
   try {
     const [data] = await db
-    .promise()
-    .query(
-      `select * from participants WHERE userid=${userid} AND projid=${projid}`
-    );
-    if (data.length==0) {
-      res.status(400).json({ status:"fail",text: "you are not here" });
-    }else{
-      var result = await db
       .promise()
-      .query(`select cur_num from projs WHERE projid=${projid}`);
+      .query(
+        `select * from participants WHERE userid=${userid} AND projid=${projid}`
+      );
+    if (data.length == 0) {
+      res.status(400).json({ status: "fail", text: "you are not here" });
+    } else {
+      var result = await db
+        .promise()
+        .query(`select cur_num from projs WHERE projid=${projid}`);
       const cur_num = result[0][0].cur_num;
       await db
         .promise()
-        .query(`UPDATE projs set cur_num=${cur_num - 1} WHERE projid=${projid};`); //인원수 -1 
+        .query(
+          `UPDATE projs set cur_num=${cur_num - 1} WHERE projid=${projid};`
+        ); //인원수 -1
       await db
         .promise()
         .query(
           `DELETE FROM participants WHERE projid=${projid} AND userid=${userid}`
         ); // 참가자 명단 업데이트
       res.json({ status: "success" });
-      }
+    }
   } catch (e) {
     console.log(e);
     console.log("join error 발생!");
@@ -480,91 +500,130 @@ const leave = async function (req, res) {
 // 결제 코드를  보기위해서는 해당 유저가 프로젝트에 참여해야하며 그 프로젝트의 결제 링크를 보내야한다.
 
 const pay_qr = async function (req, res) {
-  const userid= req.decoded._id;
-  const projid= req.params.id;
-  try{
-    const [data]= await db.promise().query(`select paylink from projs JOIN participants as p ON p.projid=projs.projid WHERE p.userid=${userid} AND p.projid=${projid} ;`)
+  const userid = req.decoded._id;
+  const projid = req.params.id;
+  try {
+    const [data] = await db
+      .promise()
+      .query(
+        `select paylink from projs JOIN participants as p ON p.projid=projs.projid WHERE p.userid=${userid} AND p.projid=${projid} ;`
+      );
     console.log(data[0].paylink);
-    if(data[0].paylink==null){
-    res.json({status:"fail",text:"판매자가 QR 결제 링크를 등록하지 않았습니다."});
-  }else{
-    res.json({status:"success",paylink:data[0].paylink});
-  }
-  }catch(e){
+    if (data[0].paylink == null) {
+      res.json({
+        status: "fail",
+        text: "판매자가 QR 결제 링크를 등록하지 않았습니다.",
+      });
+    } else {
+      res.json({ status: "success", paylink: data[0].paylink });
+    }
+  } catch (e) {
     console.log(e);
     res.status(400).json({ text: "ErrorCode:400, 잘못된 요청입니다." });
   }
-}
+};
 
-const add_pay_qr = async function (req,res) {
-  const userid= req.decoded._id;
-  const projid= req.params.id;
-  try{
+const add_pay_qr = async function (req, res) {
+  const userid = req.decoded._id;
+  const projid = req.params.id;
+  try {
     //먼저 판매자가 맞는지 확인.
-    const [isCreater]= await db.promise().query(`select paylink from projs WHERE projid=${projid} AND userid=${userid} `);
+    const [isCreater] = await db
+      .promise()
+      .query(
+        `select paylink from projs WHERE projid=${projid} AND userid=${userid} `
+      );
     console.log(isCreater);
     // paylink 컬럼이 비었는지 확인
-    if (isCreater.length==0){ //판매자가 아닌 경우
-      res.json({status:"fail",text:"판매자가 아닙니다. "});
+    if (isCreater.length == 0) {
+      //판매자가 아닌 경우
+      res.json({ status: "fail", text: "판매자가 아닙니다. " });
+    } else if (isCreater[0].paylink) {
+      // 이미 qr 결제 링크가 있는 경우
+      res.json({ status: "fail", text: "이미 QR 결제 링크를 등록하였습니다." });
+    } else {
+      // qr결제 링크가 빈 경우
+      await db
+        .promise()
+        .query(
+          `UPDATE projs SET paylink='${req.body.paylink}' WHERE projid=${projid}; `
+        );
+      res.json({ status: "success", text: "QR 결제 링크가 추가되었습니다." });
     }
-    else if (isCreater[0].paylink ){ // 이미 qr 결제 링크가 있는 경우
-      res.json({status:"fail",text:"이미 QR 결제 링크를 등록하였습니다."});
-    }else{ // qr결제 링크가 빈 경우
-      await db.promise().query(`UPDATE projs SET paylink='${req.body.paylink}' WHERE projid=${projid}; `)
-      res.json({status:"success",text:"QR 결제 링크가 추가되었습니다."});
-    }
-  }catch(e){
+  } catch (e) {
     console.log(e);
     res.status(400).json({ text: "ErrorCode:400, 잘못된 요청입니다." });
   }
-}
+};
 
-const edit_pay_qr= async function (req,res){
-  const userid= req.decoded._id;
-  const projid= req.params.id;
-  try{
-    const [isCreater]= await db.promise().query(`select paylink from projs WHERE projid=${projid} AND userid=${userid} `);
+const edit_pay_qr = async function (req, res) {
+  const userid = req.decoded._id;
+  const projid = req.params.id;
+  try {
+    const [isCreater] = await db
+      .promise()
+      .query(
+        `select paylink from projs WHERE projid=${projid} AND userid=${userid} `
+      );
     console.log(isCreater);
-    if (isCreater.length==0){ //판매자가 아닌 경우
-      res.json({status:"fail",text:"판매자가 아닙니다. "});
+    if (isCreater.length == 0) {
+      //판매자가 아닌 경우
+      res.json({ status: "fail", text: "판매자가 아닙니다. " });
+    } else if (!isCreater[0].paylink) {
+      // 등록된 QR 링크가 없을 경우
+      res.json({ status: "fail", text: "등록된 QR 결제 링크가 없습니다." });
+    } else {
+      // qr결제 링크가 있을 때 수정 코드
+      await db
+        .promise()
+        .query(
+          `UPDATE projs SET paylink='${req.body.paylink}' WHERE projid=${projid}; `
+        );
+      res.json({ status: "success", text: "QR 결제 링크가 수정되었습니다." });
     }
-    else if (!isCreater[0].paylink ){ // 등록된 QR 링크가 없을 경우
-      res.json({status:"fail",text:"등록된 QR 결제 링크가 없습니다."});
-    }
-    else{ // qr결제 링크가 있을 때 수정 코드
-      await db.promise().query(`UPDATE projs SET paylink='${req.body.paylink}' WHERE projid=${projid}; `)
-      res.json({status:"success",text:"QR 결제 링크가 수정되었습니다."});
-    }
-
-
-  }catch(e){
+  } catch (e) {
     console.log(e);
     res.status(400).json({ text: "ErrorCode:400, 잘못된 요청입니다." });
-
-
-
   }
-
-}
+};
 
 router.post("/searchbytitle", searchprojbytitle);
 router.get("/", getALLproj);
 router.get("/:id", getproj);
-router.put("/edit/:id",verifyToken, editproj_nophoto);
-router.put("/edit/single/:id", verifyToken,upload.single("photo"), editproj_onephoto);
-router.put("/edit/multi/:id",verifyToken, upload.array("photo"), editproj_multiphoto);
-router.put("/edit/state/:id",verifyToken,edit_state );
-router.delete("/delete/:id",verifyToken, delproj);
-router.post("/add",verifyToken, addproj_nophoto);
-router.post("/add/single",verifyToken, upload.single("photo"), addproj_onephoto);
-router.post("/add/multi",verifyToken, upload.array("photo"), addproj_multiphoto);
-router.get("/join/:id", verifyToken,join);
-router.get("/leave/:id", verifyToken,leave);
-router.get("/pay/qrcode/:id",verifyToken,pay_qr);
-router.post("/pay/qrcode/add/:id",verifyToken,add_pay_qr);
-router.put("/pay/qrcode/edit/:id",verifyToken,edit_pay_qr);
+router.put("/edit/:id", verifyToken, editproj_nophoto);
+router.put(
+  "/edit/single/:id",
+  verifyToken,
+  upload.single("photo"),
+  editproj_onephoto
+);
+router.put(
+  "/edit/multi/:id",
+  verifyToken,
+  upload.array("photo"),
+  editproj_multiphoto
+);
+router.put("/edit/state/:id", verifyToken, edit_state);
+router.delete("/delete/:id", verifyToken, delproj);
+router.post("/add", verifyToken, addproj_nophoto);
+router.post(
+  "/add/single",
+  verifyToken,
+  upload.single("photo"),
+  addproj_onephoto
+);
+router.post(
+  "/add/multi",
+  verifyToken,
+  upload.array("photo"),
+  addproj_multiphoto
+);
+router.get("/join/:id", verifyToken, join);
+router.get("/leave/:id", verifyToken, leave);
+router.get("/pay/qrcode/:id", verifyToken, pay_qr);
+router.post("/pay/qrcode/add/:id", verifyToken, add_pay_qr);
+router.put("/pay/qrcode/edit/:id", verifyToken, edit_pay_qr);
 
 //router.get("/pay/:id",verifyToken,pay_normal);
-
 
 module.exports = router;
