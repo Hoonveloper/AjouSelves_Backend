@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const crypto = require("crypto"); // 비밀번호 암호화 모듈
-const { verifyToken } = require("./tokenmiddleware"); // Token 검증 미들웨어
+const { verifyToken } = require("./middleware/tokenmiddleware"); // Token 검증 미들웨어
 
 const DB = require("../database/maria"); // DB 정보 가져오기
 DB.connect(); // DB 연결

@@ -5,9 +5,9 @@ const jwt = require("jsonwebtoken"); // jwt 모듈
 require("dotenv").config(); // jwt secret key value
 
 const { smtpTransport } = require("../config/email"); // email 인증을 위한 사용자 정보
-const { verifyToken } = require("./tokenmiddleware"); // Token 검증 미들웨어
-const { verifypassword } = require("./passmiddleware"); // Password 검증 미들웨어
-const authmiddleware = require("./authmiddleware");
+const { verifyToken } = require("./middleware/tokenmiddleware"); // Token 검증 미들웨어
+const { verifypassword } = require("./middleware/passmiddleware"); // Password 검증 미들웨어
+const authmiddleware = require("./middleware/authmiddleware");
 const DB = require("../database/maria"); // DB 정보 가져오기
 DB.connect();
 

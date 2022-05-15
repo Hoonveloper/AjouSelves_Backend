@@ -4,7 +4,7 @@ const jwt = require("jsonwebtoken");
 const db = require("../database/maria");
 db.connect();
 const multer = require("multer");
-const { verifyToken } = require("./tokenmiddleware");
+const { verifyToken } = require("./middleware/tokenmiddleware");
 
 const storage = multer.diskStorage({
   destination: function (req, file, callback) {
