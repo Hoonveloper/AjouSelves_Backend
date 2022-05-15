@@ -1,16 +1,16 @@
 const express = require("express");
 const router = express.Router();
-const crypto = require("crypto");
-const { verifyToken } = require("./authmiddleware");
+const crypto = require("crypto"); // 비밀번호 암호화 모듈
+const { verifyToken } = require("./middleware/tokenmiddleware"); // Token 검증 미들웨어
+
 const DB = require("../database/maria"); // DB 정보 가져오기
-const { create } = require("domain");
-DB.connect();
+DB.connect(); // DB 연결
 
 //body-parser
 router.use(express.urlencoded({ extended: true }));
 router.use(express.json());
 
-// mypage에서 회원정보 수정을 위해 기존의 정보를 가져오는 API
+// mypage에서 회원정보 수정 또는 조회를 위해 회원정보를 가져오는 API
 router.get("/", verifyToken, (req, res) => {
   const userid = req.decoded._id;
   DB.query(
@@ -28,7 +28,7 @@ router.get("/", verifyToken, (req, res) => {
   );
 });
 
-// 모든 user의  정보를 얻어온다. 개발을 위해 임시로 구현
+// 모든 user의 회원정보를 얻어온다. 개발을 위해 임시로 구현한 API
 router.get("/all", (req, res) => {
   DB.query(
     "select email,name,phonenumber,nickname,status,birth,address,account,profilelink from users where userid > 1",
@@ -62,7 +62,7 @@ router.delete("/", verifyToken, (req, res) => {
   );
 });
 
-// 수정할 값들과 고유아이디를 받아 값들을 수정해준다.
+// 회원정보 수정을 위한 API.
 router.put("/", verifyToken, (req, res) => {
   const userid = req.decoded._id;
   const phonenumber = req.body.phonenumber;
@@ -88,6 +88,7 @@ router.put("/", verifyToken, (req, res) => {
   );
 });
 
+// QR결제링크를 마이페이지에서도 등록할 수 있게 하는 API.
 router.put("/paylink", verifyToken, function (req, res) {
   const userid = req.decoded._id;
   const pay_link = req.body.paylink;
@@ -106,7 +107,7 @@ router.put("/paylink", verifyToken, function (req, res) {
   );
 });
 
-// 참여 굿즈 title 가져오기
+// 참여 굿즈 title 정보 가져오기
 router.get("/join", verifyToken, (req, res) => {
   const userid = req.decoded._id;
   DB.query(
@@ -140,7 +141,7 @@ router.get("/join", verifyToken, (req, res) => {
   );
 });
 
-// 제작 굿즈 title 가져오기
+// 제작 굿즈 title 정보 가져오기
 router.get("/create", verifyToken, (req, res) => {
   const userid = req.decoded._id;
   DB.query(
@@ -174,7 +175,7 @@ router.get("/create", verifyToken, (req, res) => {
   );
 });
 
-// 참여 굿즈 detail 가져오기
+// 참여 굿즈 detail 정보 가져오기
 router.get("/join-detail", verifyToken, (req, res) => {
   const userid = req.decoded._id;
   DB.query(
@@ -208,7 +209,7 @@ router.get("/join-detail", verifyToken, (req, res) => {
   );
 });
 
-// 제작 굿즈 detail 가져오기
+// 제작 굿즈 detail 정보 가져오기
 router.get("/create-detail", verifyToken, (req, res) => {
   const userid = req.decoded._id;
   DB.query(

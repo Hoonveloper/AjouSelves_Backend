@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const DB = require("../database/maria"); // DB 정보 가져오기
+const DB = require("../../database/maria"); // DB 정보 가져오기
 const crypto = require("crypto");
 
 //body-parser
