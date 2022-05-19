@@ -5,7 +5,8 @@ const db = require("../database/maria");
 db.connect();
 const multer = require("multer");
 const { verifyToken } = require("./authmiddleware");
-
+const DBconnection = require("../database/maria");
+const { smtpTransport } = require("../config/email");
 const storage = multer.diskStorage({
   destination: function (req, file, callback) {
     callback(null, "photo/");
@@ -89,7 +90,7 @@ var getALLproj = async function (req, res) {
     const [data] = await db
       .promise()
       .query(
-        `SELECT p.projid,p.title, p.state,p.category, p.created_at, u.userid, u.nickname,u.profilelink ,p.min_num,p.cur_num, ph.url FROM projs as p join users as u ON p.userid=u.userid LEFT JOIN photos as ph ON ph.projid=p.projid ORDER BY created_at DESC`
+        `SELECT p.projid,p.title, p.state,p.category, p.created_at, u.userid, u.nickname,u.profilelink ,p.min_num,p.cur_num,p.explained, ph.url FROM projs as p join users as u ON p.userid=u.userid LEFT JOIN photos as ph ON ph.projid=p.projid ORDER BY created_at DESC`
       );
     console.log(data);
     res.json(data);
@@ -547,6 +548,77 @@ const edit_pay_qr= async function (req,res){
 
 }
 
+const import_api = async function(req,res){
+  const userid= req.decoded._id;
+  const useremail=req.decoded._email;
+  try{
+
+    const { imp_uid, merchant_uid ,projid} = req.body;
+    const getToken = await axios({
+      url: "https://api.iamport.kr/users/getToken",
+      method: "post", // POST method
+      headers: { "Content-Type": "application/json" }, // "Content-Type": "application/json"
+      data: {
+        imp_key: process.env.IMPORT_API_KEY, // REST API 키
+        imp_secret: process.env.IMPORT_SECRET_KEY// REST API Secret
+      }
+    });
+    console.log(getToken);
+    const { access_token } = getToken.data.response;// 조회한 결제 정보
+    const getPaymentData = await axios({
+      url: `https://api.iamport.kr/payments/${imp_uid}`, 
+      method: "get", 
+      headers: { "Authorization": access_token } 
+    });
+    const paymentData = getPaymentData.data.response; // 조회한 결제 정보
+    console.log(paymentsData);
+     // DB에서 결제되어야 하는 금액 조회
+     const [order] = await db.promise().query(`select amount from projs where projid=${projid} `);
+     const amountToBePaid = order[0].amount; // 결제 되어야 하는 금액
+     // 결제 검증하기
+     const { amount, status } = paymentData;
+     if (amount === amountToBePaid) { // 결제금액 일치. 결제 된 금액 === 결제 되어야 하는 금액
+       await db.promise().query(`INSERT INTO payments(merchant_uid,projid,userid,amount) VALUES(${merchant_uid, projid, userid, amount})`);
+       
+       switch (status) {
+         case "ready": // 가상계좌 발급
+           // DB에 가상계좌 발급 정보 저장
+           const { vbank_num, vbank_date, vbank_name } = paymentData;
+           await Users.findByIdAndUpdate("/* 고객 id */", { $set: { vbank_num, vbank_date, vbank_name }});
+           await db.promise().query(`UPDATE payments SET vbank_num=${vbank_num}, vbank_name=${vbank_name}, vbank_date=${vbank_date} WHERE projid=${projid} AND userid=${userid}`);
+           // 가상계좌 발급 안내 문자메시지 발송
+           const mailoptions = {
+            from: "ajouselves@naver.com",
+            to: useremail,
+            subject: "[Goods By us] 가상계좌 발급 관련 메일입니다. ",
+            text: `가상계좌 발급이 성공되었습니다. 계좌 정보 ${vbank_num} ${vbank_date} ${vbank_name}`
+          };
+          await smtpTransport.sendMail(
+            mailoptions,
+            (error, response) => {
+              if (error) {
+                console.log(error);
+              } 
+              smtpTransport.close();
+            }
+          );
+          res.send({ status: "vbankIssued", message: "가상계좌 발급 성공" });
+          break;
+         case "paid": // 결제 완료
+           await db.promise().query(`UPDATE payments SET paid =1 WHERE projid=${projid} AND userid=${userid}`);
+           res.send({ status: "success", message: "일반 결제 성공" });
+           break;
+       }
+     } else { // 결제금액 불일치. 위/변조 된 결제
+       throw { status: "forgery", message: "위조된 결제시도" };
+     }
+  }catch(e){
+
+
+
+  }
+}
+
 router.post("/searchbytitle", searchprojbytitle);
 router.get("/", getALLproj);
 router.get("/:id", getproj);
@@ -563,6 +635,7 @@ router.get("/leave/:id", verifyToken,leave);
 router.get("/pay/qrcode/:id",verifyToken,pay_qr);
 router.post("/pay/qrcode/add/:id",verifyToken,add_pay_qr);
 router.put("/pay/qrcode/edit/:id",verifyToken,edit_pay_qr);
+router.post("pay/import",verifyToken,import_api);
 
 //router.get("/pay/:id",verifyToken,pay_normal);
 
