@@ -1,15 +1,16 @@
 const express = require("express");
 const router = express.Router();
-const crypto = require("crypto");
-const { verifyToken } = require("./authmiddleware");
+const crypto = require("crypto"); // 비밀번호 암호화 모듈
+const { verifyToken } = require("./middleware/tokenmiddleware"); // Token 검증 미들웨어
+
 const DB = require("../database/maria"); // DB 정보 가져오기
-DB.connect();
+DB.connect(); // DB 연결
 
 //body-parser
 router.use(express.urlencoded({ extended: true }));
 router.use(express.json());
 
-// mypage에서 회원정보 수정을 위해 기존의 정보를 가져오는 API
+// mypage에서 회원정보 수정 또는 조회를 위해 회원정보를 가져오는 API
 router.get("/", verifyToken, (req, res) => {
   const userid = req.decoded._id;
   DB.query(
@@ -21,13 +22,13 @@ router.get("/", verifyToken, (req, res) => {
         res.status(400).json({ text: "ErrorCode:400, 잘못된 요청입니다." });
       } else {
         console.log("user get success");
-        res.json(result);
+        res.status(200).json(result);
       }
     }
   );
 });
 
-// 모든 user의  정보를 얻어온다. 개발을 위해 임시로 구현
+// 모든 user의 회원정보를 얻어온다. 개발을 위해 임시로 구현한 API
 router.get("/all", (req, res) => {
   DB.query(
     "select email,name,phonenumber,nickname,status,birth,address,account,profilelink from users where userid > 1",
@@ -37,7 +38,7 @@ router.get("/all", (req, res) => {
         res.status(400).json({ text: "ErrorCode:400, 잘못된 요청입니다." });
       } else {
         console.log("all user get success");
-        res.json(result);
+        res.status(200).json(result);
       }
     }
   );
@@ -55,13 +56,13 @@ router.delete("/", verifyToken, (req, res) => {
         res.status(400).json({ text: "ErrorCode:400, 잘못된 요청입니다." });
       } else {
         console.log("user delete success");
-        res.json({ status: "success" });
+        res.status(200).json({ status: "success" });
       }
     }
   );
 });
 
-// 수정할 값들과 고유아이디를 받아 값들을 수정해준다.
+// 회원정보 수정을 위한 API.
 router.put("/", verifyToken, (req, res) => {
   const userid = req.decoded._id;
   const phonenumber = req.body.phonenumber;
@@ -81,13 +82,14 @@ router.put("/", verifyToken, (req, res) => {
         res.status(400).json({ text: "ErrorCode:400, 잘못된 요청입니다." });
       } else {
         console.log("user edit success");
-        res.json({ status: "success" });
+        res.status(200).json({ status: "success" });
       }
     }
   );
 });
 
-router.put("/set-paylink", verifyToken, function (req, res) {
+// QR결제링크를 마이페이지에서도 등록할 수 있게 하는 API.
+router.put("/paylink", verifyToken, function (req, res) {
   const userid = req.decoded._id;
   const pay_link = req.body.paylink;
   DB.query(
@@ -99,13 +101,13 @@ router.put("/set-paylink", verifyToken, function (req, res) {
         res.status(400).json({ text: "ErrorCode:400, 잘못된 요청입니다." });
       } else {
         console.log("paylink post success");
-        res.json({ status: "success" });
+        res.status(200).json({ status: "success" });
       }
     }
   );
 });
 
-// 참여 굿즈 title 가져오기
+// 참여 굿즈 title 정보 가져오기
 router.get("/join", verifyToken, (req, res) => {
   const userid = req.decoded._id;
   DB.query(
@@ -115,10 +117,13 @@ router.get("/join", verifyToken, (req, res) => {
       if (err) {
         console.log("유저가 참가한 프로젝트가 없습니다.");
         res.status(400).json({ text: "ErrorCode:400, 잘못된 요청입니다." });
+      } else if (result.length === 0) {
+        console.log("유저가 참가한 프로젝트가 없습니다.");
+        res.status(400).json({ text: "ErrorCode:400, 잘못된 요청입니다." });
       } else {
         const attend_proj = result.map((v) => v.projid);
         DB.query(
-          `select title from projs where projid in (${attend_proj})`,
+          `select projid,title from projs where projid in (${attend_proj})`,
           (err, result, fields) => {
             if (err) {
               console.log("title을 불러오는 중 error 발생");
@@ -127,7 +132,7 @@ router.get("/join", verifyToken, (req, res) => {
                 .json({ text: "ErrorCode:400, 잘못된 요청입니다." });
             } else {
               console.log("get join title success");
-              res.json(result);
+              res.status(200).json(result);
             }
           }
         );
@@ -136,7 +141,7 @@ router.get("/join", verifyToken, (req, res) => {
   );
 });
 
-// 제작 굿즈 title 가져오기
+// 제작 굿즈 title 정보 가져오기
 router.get("/create", verifyToken, (req, res) => {
   const userid = req.decoded._id;
   DB.query(
@@ -144,10 +149,13 @@ router.get("/create", verifyToken, (req, res) => {
     userid,
     (err, result, fileds) => {
       if (err) {
+        res.status(400).json({ text: "ErrorCode:400, 잘못된 요청입니다." });
+      } else if (result.length === 0) {
         console.log("유저가 생성한 프로젝트가 없습니다.");
         res.status(400).json({ text: "ErrorCode:400, 잘못된 요청입니다." });
       } else {
         const create_proj = result.map((v) => v.projid);
+        console.log(create_proj);
         DB.query(
           `select title from projs where projid in (${create_proj})`,
           (err, result, fields) => {
@@ -158,7 +166,7 @@ router.get("/create", verifyToken, (req, res) => {
                 .json({ text: "ErrorCode:400, 잘못된 요청입니다." });
             } else {
               console.log("get create title success");
-              res.json(result);
+              res.status(200).json(result);
             }
           }
         );
@@ -167,7 +175,7 @@ router.get("/create", verifyToken, (req, res) => {
   );
 });
 
-// 참여 굿즈 detail 가져오기
+// 참여 굿즈 detail 정보 가져오기
 router.get("/join-detail", verifyToken, (req, res) => {
   const userid = req.decoded._id;
   DB.query(
@@ -177,25 +185,31 @@ router.get("/join-detail", verifyToken, (req, res) => {
       if (err) {
         console.log("유저가 참가한 프로젝트가 없습니다.");
         res.status(400).json({ text: "ErrorCode:400, 잘못된 요청입니다." });
-      }
-      const create_proj = result.map((v) => v.projid);
-      DB.query(
-        `select *from projs where projid in (${create_proj})`,
-        (err, result, fields) => {
-          if (err) {
-            console.log("detail을 불러오는 중 error 발생");
-            res.status(400).json({ text: "ErrorCode:400, 잘못된 요청입니다." });
-          } else {
-            console.log("get join detail success");
-            res.json(result);
+      } else if (result.length === 0) {
+        console.log("유저가 참가한 프로젝트가 없습니다.");
+        res.status(400).json({ text: "ErrorCode:400, 잘못된 요청입니다." });
+      } else {
+        const create_proj = result.map((v) => v.projid);
+        DB.query(
+          `select *from projs where projid in (${create_proj})`,
+          (err, result, fields) => {
+            if (err) {
+              console.log("detail을 불러오는 중 error 발생");
+              res
+                .status(400)
+                .json({ text: "ErrorCode:400, 잘못된 요청입니다." });
+            } else {
+              console.log("get join detail success");
+              res.status(200).json(result);
+            }
           }
-        }
-      );
+        );
+      }
     }
   );
 });
 
-// 제작 굿즈 detail 가져오기
+// 제작 굿즈 detail 정보 가져오기
 router.get("/create-detail", verifyToken, (req, res) => {
   const userid = req.decoded._id;
   DB.query(
@@ -205,20 +219,26 @@ router.get("/create-detail", verifyToken, (req, res) => {
       if (err) {
         console.log("유저가 생성한 프로젝트가 없습니다.");
         res.status(400).json({ text: "ErrorCode:400, 잘못된 요청입니다." });
-      }
-      const create_proj = result.map((v) => v.projid);
-      DB.query(
-        `select *from projs where projid in (${create_proj})`,
-        (err, result, fields) => {
-          if (err) {
-            console.log("detail을 불러오는 중 error 발생");
-            res.status(400).json({ text: "ErrorCode:400, 잘못된 요청입니다." });
-          } else {
-            console.log("get create detail success");
-            res.json(result);
+      } else if (result.length === 0) {
+        console.log("유저가 생성한 프로젝트가 없습니다.");
+        res.status(400).json({ text: "ErrorCode:400, 잘못된 요청입니다." });
+      } else {
+        const create_proj = result.map((v) => v.projid);
+        DB.query(
+          `select *from projs where projid in (${create_proj})`,
+          (err, result, fields) => {
+            if (err) {
+              console.log("detail을 불러오는 중 error 발생");
+              res
+                .status(400)
+                .json({ text: "ErrorCode:400, 잘못된 요청입니다." });
+            } else {
+              console.log("get create detail success");
+              res.status(200).json(result);
+            }
           }
-        }
-      );
+        );
+      }
     }
   );
 });
