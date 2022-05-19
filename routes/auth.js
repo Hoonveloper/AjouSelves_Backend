@@ -114,6 +114,7 @@ router.post("/login", verifypassword, async (req, res) => {
     const token = jwt.sign(
       {
         _id: user_id,
+        _email:email
       },
       process.env.JWT_SECRET,
       {
