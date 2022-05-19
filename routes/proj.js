@@ -4,14 +4,11 @@ const jwt = require("jsonwebtoken");
 const db = require("../database/maria");
 db.connect();
 const multer = require("multer");
-<<<<<<< HEAD
-const { verifyToken } = require("./authmiddleware");
+const { verifyToken } = require("./middleware/tokenmiddleware");
 const DBconnection = require("../database/maria");
 const { smtpTransport } = require("../config/email");
-=======
-const { verifyToken } = require("./middleware/tokenmiddleware");
 
->>>>>>> 44675b8de25d89fdf196f7868692a78cf88c5fbc
+
 const storage = multer.diskStorage({
   destination: function (req, file, callback) {
     callback(null, "photo/");
@@ -667,7 +664,6 @@ const import_api = async function(req,res){
 router.post("/searchbytitle", searchprojbytitle);
 router.get("/", getALLproj);
 router.get("/:id", getproj);
-<<<<<<< HEAD
 router.put("/edit/:id",verifyToken, editproj_nophoto);
 router.put("/edit/single/:id", verifyToken,upload.single("photo"), editproj_onephoto);
 router.put("/edit/multi/:id",verifyToken, upload.array("photo"), editproj_multiphoto);
@@ -682,41 +678,6 @@ router.get("/pay/qrcode/:id",verifyToken,pay_qr);
 router.post("/pay/qrcode/add/:id",verifyToken,add_pay_qr);
 router.put("/pay/qrcode/edit/:id",verifyToken,edit_pay_qr);
 router.post("pay/import",verifyToken,import_api);
-=======
-router.put("/edit/:id", verifyToken, editproj_nophoto);
-router.put(
-  "/edit/single/:id",
-  verifyToken,
-  upload.single("photo"),
-  editproj_onephoto
-);
-router.put(
-  "/edit/multi/:id",
-  verifyToken,
-  upload.array("photo"),
-  editproj_multiphoto
-);
-router.put("/edit/state/:id", verifyToken, edit_state);
-router.delete("/delete/:id", verifyToken, delproj);
-router.post("/add", verifyToken, addproj_nophoto);
-router.post(
-  "/add/single",
-  verifyToken,
-  upload.single("photo"),
-  addproj_onephoto
-);
-router.post(
-  "/add/multi",
-  verifyToken,
-  upload.array("photo"),
-  addproj_multiphoto
-);
-router.get("/join/:id", verifyToken, join);
-router.get("/leave/:id", verifyToken, leave);
-router.get("/pay/qrcode/:id", verifyToken, pay_qr);
-router.post("/pay/qrcode/add/:id", verifyToken, add_pay_qr);
-router.put("/pay/qrcode/edit/:id", verifyToken, edit_pay_qr);
->>>>>>> 44675b8de25d89fdf196f7868692a78cf88c5fbc
 
 //router.get("/pay/:id",verifyToken,pay_normal);
 
