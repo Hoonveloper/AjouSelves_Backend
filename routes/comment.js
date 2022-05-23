@@ -2,12 +2,13 @@ const express = require('express');
 const router =express.Router();
 const jwt = require('jsonwebtoken');
 const db= require('../database/maria');
+const { verifyToken } = require("./middleware/tokenmiddleware");
 db.connect();
 
 const addComment = async function(req,res){
-    const projid= req.body.projid || "NULL";
-    const postid = req.body.postid || "NULL";
-    const userid= req.body.userid;
+    const projid= req.params.projid || "NULL";
+    const postid = req.params.postid || "NULL";
+    const userid= req.decoded._id;
     const comment= req.body.comment;
     if (!comment){
         console.log("zz");
@@ -29,18 +30,19 @@ const addComment = async function(req,res){
 };
 
 const editComment = async function(req,res){
-    const id= req.params.id;
+    const userid= req.decoded._id;
+    const conmment_id= req.params.commentid;
     const comment = req.body.comment;
     if (!comment){
-        console.log("zz");
         res.status(400).json({status:"fail",text:"수정할 댓글을 입력해주세요!"});
-
     }
     try{
-        const [data]=await db.promise().query(`UPDATE comments SET comments='${comment}'WHERE commentid=${id};` );
-     
-        res.json({status:"success"});
-
+        const [result] = await db.promise.query(`SELECT userid from comments where commentid=${conmment_id}`);
+        if (result[0].userid!=userid) res.status(400).json({status:"fail",text:"댓글 작성자만 수정이 가능합니다."});
+        else{
+            await db.promise().query(`UPDATE comments SET comments='${comment}'WHERE commentid=${id};` );
+            res.json({status:"success", text:"댓글 수정을 완료하였습니다."});
+        }
     }catch{
         console.log('댓글 수정 중 error 발생!');
         res.status(400).json({ text: 'ErrorCode:400, 잘못된 요청입니다.' });
@@ -52,11 +54,18 @@ const editComment = async function(req,res){
 
 };
 const deleteComment= async function(req,res){
-    const id= req.params.id;
+    const id= req.params.commentid;
+    const userid= req.decoded._id;
     try{
-        const [data] =await db.promise().query(`DELETE FROM comments WHERE commentid=${id};`);
-        res.json({status:"success"});
+        const [result] = await db.promise.query(`SELECT userid from comments where commentid=${conmment_id}`);
+        if (result[0].userid!=userid) res.status(400).json({status:"fail",text:"댓글 작성자만 삭제가 가능합니다."});
+        else{
 
+            const [data] =await db.promise().query(`DELETE FROM comments WHERE commentid=${id};`);
+            res.json({status:"success",text:"댓글 삭제를 완료하였습니다."});
+    
+        }
+       
     }catch{
         console.log('댓글 삭제 중 error 발생!');
         res.status(400).json({ text: 'ErrorCode:400, 잘못된 요청입니다.' });
@@ -65,7 +74,7 @@ const deleteComment= async function(req,res){
 
 }
 
-router.post('/add',addComment);
-router.put('/edit/:id' , editComment);
-router.delete('/delete/:id',deleteComment);
+router.post('/add',verifyToken,addComment);
+router.put('/edit/:id' ,verifyToken, editComment);
+router.delete('/delete/:id',verifyToken,deleteComment);
 module.exports=router;
