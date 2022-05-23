@@ -2,6 +2,7 @@ const express = require('express');
 const router =express.Router();
 const jwt = require('jsonwebtoken');
 const db= require('../database/maria');
+const { verifyToken } = require("./middleware/tokenmiddleware");
 db.connect();
 const multer= require('multer');
 
@@ -43,7 +44,7 @@ var getpost= async function(req,res){
     디테일한 post 정보 가져오는 코드 (댓글 포함)
 
     */
-    const id = req.params.id;
+    const id = req.decoded._id;
     try{
         const [post]= await db.promise().query(`SELECT p.postid, u.nickname, p.title,p.explained, p.created_at FROM posts AS p JOIN users AS u ON p.userid=u.userid WHERE p.postid=${id};`);
         const [photos]= await db.promise().query(`SELECT * FROM photos WHERE postid=${id} ORDER BY thumbnail desc;`);
@@ -97,7 +98,7 @@ var addpost_nophoto= async function(req,res){
     //INSERT INTO posts() VALUES()...
    //project 정보 db에 저장하는코드
    
-       const userid=req.body.userid;
+       const userid=req.decoded._id;
        const title= req.body.title;
        const explained= req.body.explained;
        console.log(req.body);
@@ -120,7 +121,7 @@ const addpost_onephoto =  async function(req,res){
 //project 정보 db에 저장하는코드
     //console.log("add");
     const photos = req.file;
-    const userid=req.body.userid;
+    const userid=req.decoded._id;
     const title= req.body.title;
     const explained= req.body.explained;
     
@@ -146,7 +147,7 @@ const addpost_multiphoto=async function(req,res){
    //project 정보 db에 저장하는코드
        //console.log("add");
     const photos = req.files;
-    const userid=req.body.userid;
+    const userid=req.decoded._id;
     const title= req.body.title;
     const explained= req.body.explained;
     
@@ -180,14 +181,21 @@ const addpost_multiphoto=async function(req,res){
 
 var editpost_nophoto= async function(req,res){
 
-    const postid = req.params.id;
+    const userid=req.decoded._id;
     const title= req.body.title;
     const explained= req.body.explained;
     
     //console.log(req.body);
     try{
-        const data= await db.promise().query(`UPDATE posts SET title='${title}', explained='${explained}' WHERE postid=${postid};`);
-        res.json({status:"success"});
+        const [result] = await db.promise().query(`select userid from posts where postid=${postid}`);
+        if(result[0].userid ==userid){
+            const data= await db.promise().query(`UPDATE posts SET title='${title}', explained='${explained}' WHERE postid=${postid};`);
+            res.json({status:"success",text:"글 작성자만 수정이 가능합니다."});
+        }
+        else{
+            res.json({status:"success", text:"글 작성자만 수정이 가능합니다."});
+        }
+        
 
     }catch{
         console.log('editpost에서 error 발생!');
@@ -198,17 +206,25 @@ var editpost_nophoto= async function(req,res){
 
 }
 var editpost_onephoto = async function (req,res){
+    const userid=req.decoded._id;
     const photos = req.file;
     const postid = req.params.id;
     const title= req.body.title;
     const explained= req.body.explained;
     const photo_url=`/photo/${photos.filename}`;
     try{
-        await db.promise().query(`DELETE from photos where postid=${postid};`); //본래 있던 사진 삭제. 
-        await db.promise().query(`INSERT INTO photos(postid,projid,url,thumbnail) VALUES(${postid},NULL,'${photo_url}',1)`);
-        const data= await db.promise().query(`UPDATE posts SET title='${title}', explained='${explained}' WHERE postid=${postid};`);
-        res.json({status:"success"});
-
+        const [result] = await db.promise().query(`select userid from posts where postid=${postid}`);
+        if(result[0].userid ==userid){
+            await db.promise().query(`DELETE FROM posts WHERE postid=${postid};`);
+            //console.log(data);
+            await db.promise().query(`DELETE from photos where postid=${postid};`); //본래 있던 사진 삭제. 
+            await db.promise().query(`INSERT INTO photos(postid,projid,url,thumbnail) VALUES(${postid},NULL,'${photo_url}',1)`);
+            await db.promise().query(`UPDATE posts SET title='${title}', explained='${explained}' WHERE postid=${postid};`);
+            res.json({status:"success", text:"글 수정을 성공했습니다."});
+        }
+        else{
+            res.json({status:"success", text:"글 작성자만 수정이 가능합니다."});
+        }
     }catch(e){
         console.log(e);
         console.log('editpost에서 error 발생!');
@@ -217,22 +233,32 @@ var editpost_onephoto = async function (req,res){
 }
 
 var editpost_multiphoto = async function(req,res){
+    const userid=req.decoded._id;
     const photos = req.files;
     const postid = req.params.id;
     const title= req.body.title;
     const explained= req.body.explained;
     try{
-        await db.promise().query(`DELETE from photos where postid=${postid};`); //본래 있던 사진 삭제. 
-        photos.forEach( async(photo,idx)=> {
-            const photo_url=`/photo/${photo.filename}`;
-            console.log(photo_url);
-            await db.promise().query(`INSERT INTO photos (postid,projid,url) VALUES(${postid},NULL,'${photo_url}');`);
-            if(idx==0){ // 첫번째 사진을 Thumbnail 이미지로 변경.
-                await db.promise().query(`UPDATE photos SET thumbnail=1 WHERE url='${photo_url}';`);
-            }
-        })
-        const data= await db.promise().query(`UPDATE posts SET title='${title}', explained='${explained}' WHERE postid=${postid};`);
-        res.json({status:"success"});
+        const [result] = await db.promise().query(`select userid from posts where postid=${postid}`);
+        if(result[0].userid ==userid){
+            await db.promise().query(`DELETE from photos where postid=${postid};`); //본래 있던 사진 삭제. 
+            photos.forEach( async(photo,idx)=> {
+                const photo_url=`/photo/${photo.filename}`;
+                console.log(photo_url);
+                await db.promise().query(`INSERT INTO photos (postid,projid,url) VALUES(${postid},NULL,'${photo_url}');`);
+                if(idx==0){ // 첫번째 사진을 Thumbnail 이미지로 변경.
+                    await db.promise().query(`UPDATE photos SET thumbnail=1 WHERE url='${photo_url}';`);
+                }
+            })
+            const data= await db.promise().query(`UPDATE posts SET title='${title}', explained='${explained}' WHERE postid=${postid};`);
+            res.json({status:"success", text:"글 수정을 성공했습니다."});
+
+        }
+        else{
+            res.json({status:"success", text:"글 작성자만 수정이 가능합니다."});
+
+        }
+        
 
     }catch(e){
         console.log(e);
@@ -246,10 +272,23 @@ var editpost_multiphoto = async function(req,res){
 
 var delpost = async function(req,res){
     const postid = req.params.id;
+    const userid=req.decoded._id;
     try{
+        const [result] = await db.promise().query(`select userid from posts where postid=${postid}`);
+        if(result[0].userid ==userid){
+            const data =await db.promise().query(`DELETE FROM posts WHERE postid=${postid};`);
+            //console.log(data);
+            res.json({status:"success", text:"글 삭제를 성공했습니다."});
+
+        }
+        else{
+            res.json({status:"success", text:"글 작성자만 삭제가 가능합니다.."});
+
+        }
+
         const data =await db.promise().query(`DELETE FROM posts WHERE postid=${postid};`);
         //console.log(data);
-        res.json({status:"success"});
+        res.json({status:"success", text:"글 삭제를 성공했습니다."});
     }catch{
         console.log('delpost에서 error 발생!');
         res.status(400).json({ status: "fail" });
@@ -259,12 +298,12 @@ var delpost = async function(req,res){
 
 router.post("/search",searchpostbytitle);
 router.get("/all",getALLpost);
-router.get("/:id",getpost);
-router.put("/edit/:id",editpost_nophoto);
-router.put("/edit/single/:id",upload.single("photo"),editpost_onephoto);
-router.put("/edit/multi/:id",upload.array("photo"),editpost_multiphoto);
-router.delete("/delete/:id",delpost);
-router.post("/add",addpost_nophoto); //사진 없을 때
-router.post("/add/single",upload.single("photo"),addpost_onephoto); //사진 1개
-router.post("/add/multi",upload.array("photo"),addpost_multiphoto); //사진 2개 이상
+router.get("/:id",verifyToken,getpost);
+router.put("/edit/:id",verifyToken,editpost_nophoto);
+router.put("/edit/single/:id",verifyToken,upload.single("photo"),editpost_onephoto);
+router.put("/edit/multi/:id",verifyToken,upload.array("photo"),editpost_multiphoto);
+router.delete("/delete/:id",verifyToken,delpost);
+router.post("/add",verifyToken,addpost_nophoto); //사진 없을 때
+router.post("/add/single",verifyToken,upload.single("photo"),addpost_onephoto); //사진 1개
+router.post("/add/multi",verifyToken,upload.array("photo"),addpost_multiphoto); //사진 2개 이상
 module.exports = router;
