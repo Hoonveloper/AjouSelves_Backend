@@ -27,12 +27,7 @@ var config = require("./config/config");
 var database = require("./database/maria");
 
 // 라우터로 정리한 기능 불러오기
-var post = require("./routes/post");
-var proj = require("./routes/proj");
-var user = require("./routes/user");
-const auth = require("./routes/auth");
-var comment = require("./routes/comment");
-const kakao = require("./routes/kakao");
+const controller = require("./routes/controller");
 const { fstat } = require("fs");
 const cors = require("cors");
 // 익스프레스 객체 생성
@@ -58,7 +53,6 @@ app.use(bodyParser.json());
 app.use("/photo", static(path.join(__dirname, "photo")));
 app.use("/public", static(path.join(__dirname, "public")));
 
-
 // cookie-parser 설정
 app.use(cookieParser());
 
@@ -72,12 +66,7 @@ app.use(
 );
 
 // 라우터로 정리한 기능 사용하기
-app.use("/post", post);
-app.use("/proj", proj);
-app.use("/user", user);
-app.use("/auth", auth);
-app.use("/comment", comment);
-app.use("/kakao", kakao);
+app.use("/api", controller);
 
 //===== Passport 사용 설정 =====//
 // Passport의 세션을 사용할 때는 그 전에 Express의 세션을 사용하는 코드가 있어야 함
