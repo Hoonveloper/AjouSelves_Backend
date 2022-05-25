@@ -67,7 +67,7 @@ var getpost= async function(req,res){
             post.push(JSON.parse(temp));
         })
         console.log(post);
-        res.send(post);
+        res.send({status:"success",post});
     }catch{
         console.log('getpost에서 error 발생!');
         res.status(400).json({ status: "fail" });
@@ -85,7 +85,7 @@ var getALLpost= async function(req,res){
     try{
         const [data] = await db.promise().query(`SELECT p.title, p.explained, p.created_at, u.userid, u.nickname, ph.url FROM posts as p INNER JOIN users as u ON p.userid=u.userid LEFT JOIN photos as ph ON ph.postid=p.postid where thumbnail=1 ORDER BY p.created_at DESC`);
         //console.log(data);
-        res.json(data);
+        res.json({status:"success",data});
 
 
     }catch(e){
@@ -104,7 +104,7 @@ var addpost_nophoto= async function(req,res){
        console.log(req.body);
        try{
            const data=await db.promise().query(`INSERT INTO posts(userid,title,explained) VALUES(${userid},'${title}','${explained}')`);
-           res.json({status:"success"});
+           res.json({status:"success",text:"게시글 작성 완료"});
    
        }catch(e){
            
@@ -171,7 +171,7 @@ const addpost_multiphoto=async function(req,res){
         })
         
         
-        res.json({status:"success"});
+        res.json({status:"success",text:"게시글 작성 완료"});
     }catch(e){
         console.log('addpost에서 error 발생!');
         console.log(e);
@@ -190,7 +190,7 @@ var editpost_nophoto= async function(req,res){
         const [result] = await db.promise().query(`select userid from posts where postid=${postid}`);
         if(result[0].userid ==userid){
             const data= await db.promise().query(`UPDATE posts SET title='${title}', explained='${explained}' WHERE postid=${postid};`);
-            res.json({status:"success",text:"글 작성자만 수정이 가능합니다."});
+            res.json({status:"success",text:"글 수정이 완료되었습니다."});
         }
         else{
             res.json({status:"success", text:"글 작성자만 수정이 가능합니다."});
@@ -220,7 +220,7 @@ var editpost_onephoto = async function (req,res){
             await db.promise().query(`DELETE from photos where postid=${postid};`); //본래 있던 사진 삭제. 
             await db.promise().query(`INSERT INTO photos(postid,projid,url,thumbnail) VALUES(${postid},NULL,'${photo_url}',1)`);
             await db.promise().query(`UPDATE posts SET title='${title}', explained='${explained}' WHERE postid=${postid};`);
-            res.json({status:"success", text:"글 수정을 성공했습니다."});
+            res.json({status:"success",text:"글 수정이 완료되었습니다."});
         }
         else{
             res.json({status:"success", text:"글 작성자만 수정이 가능합니다."});
@@ -251,7 +251,7 @@ var editpost_multiphoto = async function(req,res){
                 }
             })
             const data= await db.promise().query(`UPDATE posts SET title='${title}', explained='${explained}' WHERE postid=${postid};`);
-            res.json({status:"success", text:"글 수정을 성공했습니다."});
+            res.json({status:"success",text:"글 수정이 완료되었습니다."});
 
         }
         else{
