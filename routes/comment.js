@@ -12,7 +12,7 @@ const addComment = async function(req,res){
     const comment= req.body.comment;
     if (!comment){
         console.log("zz");
-        res.status(400).json({status:"fail",text:"댓글을 입력해주세요!"});
+        res.status(400).json({status:"fail",text:"댓글을 입력해주세요"});
 
     }
     //console.log(projid, postid);
@@ -20,7 +20,7 @@ const addComment = async function(req,res){
 
     const [data]=await db.promise().query(`INSERT INTO comments(postid,userid,projid,comments) VALUES (${postid}, ${userid},${projid},'${comment}')`);
     //console.log(data);
-    res.json({status:"success"});
+    res.json({status:"success",text:"댓글 작성을 완료하였습니다."});
     }catch{
 
         console.log('댓글 추가 중 error 발생!');
