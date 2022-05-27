@@ -45,6 +45,7 @@ app.use(bodyParser.json());
 
 // public 폴더를 static으로 오픈
 app.use("/photo", static(path.join(__dirname, "photo")));
+app.use("/qr_pay", static(path.join(__dirname, "qr_pay")));
 app.use("/public", static(path.join(__dirname, "public")));
 
 
@@ -94,6 +95,8 @@ app.on("close", function () {
 // 시작된 서버 객체를 리턴받도록 합니다.
 var server = http.createServer(app).listen(app.get("port"), function () {
   const dir = "./photo";
+  const dir_qr = "./qr_pay";
   if (!fs.existsSync(dir)) fs.mkdirSync(dir);
+  if (!fs.existsSync(dir_qr)) fs.mkdirSync(dir_qr);
   console.log("서버가 시작되었습니다. 포트 : " + app.get("port"));
 });

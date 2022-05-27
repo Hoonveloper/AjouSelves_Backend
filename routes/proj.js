@@ -26,6 +26,23 @@ const upload = multer({
   },
 });
 
+const storage_qr = multer.diskStorage({
+  destination: function (req, file, callback) {
+    callback(null, "qr_pay/");
+  },
+  filename: function (req, file, callback) {
+    callback(null, Date.now() + "-" + file.originalname);
+  },
+});
+
+const upload_qr = multer({
+  storage: storage_qr,
+  limits: {
+    files: 10,
+    fileSize: 1024 * 1024 * 5,
+  },
+});
+
 var searchprojbytitle = async function (req, res) {
   //SELECT * FROM proj WHERE title = req.asdf 이런식으로 제목으로 검색
   const title = req.body.title;
@@ -434,9 +451,13 @@ const pay_qr = async function (req, res) {
   }
 };
 
-const add_pay_qr = async function (req, res) {
+const add_qr = async function (req, res) {
+  const photo = req.files;
   const userid = req.decoded._id;
   const projid = req.params.id;
+  const photo_url = `qr_pay/${photo[0].filename}`;
+  
+
   try {
     //먼저 판매자가 맞는지 확인.
     const [isCreater] = await db
@@ -457,8 +478,9 @@ const add_pay_qr = async function (req, res) {
       await db
         .promise()
         .query(
-          `UPDATE projs SET paylink='${req.body.paylink}' WHERE projid=${projid}; `
+          `UPDATE projs SET paylink='${req.body.paylink}' ,qr_url='${photo_url}' WHERE projid=${projid}; `
         );
+      
       res.json({ status: "success", text: "QR 결제 링크가 추가되었습니다." });
     }
   } catch (e) {
@@ -569,6 +591,42 @@ const import_api = async function(req,res){
   }
 }
 
+const add_pay_photo = async function(req,res){
+  const qr_photo = req.files;
+  const userid = req.decoded._id;
+  const projid = req.params.id;
+  try {
+    //먼저 판매자가 맞는지 확인.
+    const [isCreater] = await db
+      .promise()
+      .query(
+        `select paylink from projs WHERE projid=${projid} AND userid=${userid} `
+      );
+    console.log(isCreater);
+    // paylink 컬럼이 비었는지 확인
+    if (isCreater.length == 0) {
+      //판매자가 아닌 경우
+      res.json({ status: "fail", text: "판매자가 아닙니다. " });
+    } else if (isCreater[0].paylink) {
+      // 이미 qr 결제 링크가 있는 경우
+      res.json({ status: "fail", text: "이미 QR 결제 링크를 등록하였습니다." });
+    } else {
+      // qr결제 링크가 빈 경우
+      await db
+        .promise()
+        .query(
+          `UPDATE projs SET paylink='${req.body.paylink}' WHERE projid=${projid}; `
+        );
+      res.json({ status: "success", text: "QR 결제 링크가 추가되었습니다." });
+    }
+  } catch (e) {
+    console.log(e);
+    res.status(400).json({ text: "ErrorCode:400, 잘못된 요청입니다." });
+  }
+
+
+}
+
 router.post("/searchbytitle", searchprojbytitle);
 router.get("/", getALLproj);
 router.get("/:id", getproj);
@@ -581,7 +639,8 @@ router.post("/add_photo",verifyToken, upload.array("photo"), addproj_multiphoto)
 router.get("/join/:id", verifyToken,join);
 router.get("/leave/:id", verifyToken,leave);
 router.get("/pay/qrcode/:id",verifyToken,pay_qr);
-router.post("/pay/qrcode/add/:id",verifyToken,add_pay_qr);
+router.post("/pay/qr/add/:id",verifyToken,upload_qr.array("photo"),add_qr);
+
 router.put("/pay/qrcode/edit/:id",verifyToken,edit_pay_qr);
 
 /*
