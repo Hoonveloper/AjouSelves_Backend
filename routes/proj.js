@@ -434,16 +434,16 @@ const pay_qr = async function (req, res) {
     const [data] = await db
       .promise()
       .query(
-        `select paylink from projs JOIN participants as p ON p.projid=projs.projid WHERE p.userid=${userid} AND p.projid=${projid} ;`
+        `select paylink ,qr_url from projs JOIN participants as p ON p.projid=projs.projid WHERE p.userid=${userid} AND p.projid=${projid} ;`
       );
     console.log(data[0].paylink);
-    if (data[0].paylink == null) {
+    if (data[0].paylink == null || data[0].qr_url ==null) {
       res.json({
         status: "fail",
-        text: "판매자가 QR 결제 링크를 등록하지 않았습니다.",
+        text: "판매자가 QR 결제 링크 혹은 QR코드 사진을 등록하지 않았습니다.",
       });
     } else {
-      res.json({ status: "success", paylink: data[0].paylink });
+      res.json({ status: "success", paylink: data[0].paylink , qr_url:data[0].qr_url });
     }
   } catch (e) {
     console.log(e);
@@ -490,8 +490,10 @@ const add_qr = async function (req, res) {
 };
 
 const edit_pay_qr = async function (req, res) {
+  const photo=req.files;
   const userid = req.decoded._id;
   const projid = req.params.id;
+  const photo_url = `qr_pay/${photo[0].filename}`;
   try {
     const [isCreater] = await db
       .promise()
@@ -510,7 +512,7 @@ const edit_pay_qr = async function (req, res) {
       await db
         .promise()
         .query(
-          `UPDATE projs SET paylink='${req.body.paylink}' WHERE projid=${projid}; `
+          `UPDATE projs SET paylink='${req.body.paylink}',qr_url='${photo_url}' WHERE projid=${projid}; `
         );
       res.json({ status: "success", text: "QR 결제 링크가 수정되었습니다." });
     }
@@ -638,10 +640,10 @@ router.post("/add",verifyToken, addproj_nophoto);
 router.post("/add_photo",verifyToken, upload.array("photo"), addproj_multiphoto);
 router.get("/join/:id", verifyToken,join);
 router.get("/leave/:id", verifyToken,leave);
-router.get("/pay/qrcode/:id",verifyToken,pay_qr);
+router.get("/pay/qr/:id",verifyToken,pay_qr);
 router.post("/pay/qr/add/:id",verifyToken,upload_qr.array("photo"),add_qr);
 
-router.put("/pay/qrcode/edit/:id",verifyToken,edit_pay_qr);
+router.put("/pay/qr/edit/:id",verifyToken,upload_qr.array("photo"),edit_pay_qr);
 
 /*
 * 아임포트 연동 api 구현 완료. 그러나 FE/APP 미구현 사항으로 인한 주석처리
