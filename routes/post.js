@@ -86,7 +86,7 @@ var getALLpost= async function(req,res){
         const [data] = await db.promise().query(`SELECT p.postid,p.title, p.explained, p.created_at, u.userid, u.nickname , ph.url FROM posts as p join users as u ON p.userid=u.userid LEFT JOIN photos as ph ON ph.postid=p.postid AND ph.thumbnail =1 ORDER BY created_at DESC;`);
        
         //console.log(data);
-        res.json({status:"success",data});
+        res.json(data);
 
 
     }catch(e){
