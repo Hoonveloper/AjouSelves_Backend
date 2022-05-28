@@ -48,7 +48,7 @@ var getpost= async function(req,res){
     try{
         const [post]= await db.promise().query(`SELECT p.postid, u.nickname, p.title,p.explained, p.created_at FROM posts AS p JOIN users AS u ON p.userid=u.userid WHERE p.postid=${id};`);
         const [photos]= await db.promise().query(`SELECT * FROM photos WHERE postid=${id} ORDER BY thumbnail desc;`);
-        console.log[photos];
+    
         post[0].photos= new Array();
         photos.forEach((photo)=>{
             post[0].photos.push(photo.url);
@@ -81,11 +81,9 @@ var getALLpost= async function(req,res){
     SELECT * FROM posts ORDER BY created_ at (desc) -> 최신순
     SELECT * FROM posts ORDER BY created_ at (desc) -> 오래된순
     */
-
     try{
         const [data] = await db.promise().query(`SELECT p.postid,p.title, p.explained, p.created_at, u.userid, u.nickname , ph.url FROM posts as p join users as u ON p.userid=u.userid LEFT JOIN photos as ph ON ph.postid=p.postid AND ph.thumbnail =1 ORDER BY created_at DESC;`);
        
-        //console.log(data);
         res.json(data);
 
 
@@ -161,14 +159,10 @@ const addpost_multiphoto=async function(req,res){
       
         photos.forEach( async(photo,idx)=> {
             const photo_url=`/photo/${photo.filename}`;
-            console.log(photo_url);
             const [photo_data]= await db.promise().query(`INSERT INTO photos (postid,projid,url) VALUES(${insertid},NULL,'${photo_url}');`);
             if(idx==0){ // 첫번째 사진을 Thumbnail 이미지로 변경.
                 await db.promise().query(`UPDATE photos SET thumbnail=1 WHERE url='${photo_url}';`);
             }
-            
-           
-        
         })
         
         
@@ -194,7 +188,7 @@ var editpost_nophoto= async function(req,res){
             res.json({status:"success",text:"글 수정이 완료되었습니다."});
         }
         else{
-            res.json({status:"success", text:"글 작성자만 수정이 가능합니다."});
+            res.json({status:"fail", text:"글 작성자만 수정이 가능합니다."});
         }
         
 
@@ -224,7 +218,7 @@ var editpost_onephoto = async function (req,res){
             res.json({status:"success",text:"글 수정이 완료되었습니다."});
         }
         else{
-            res.json({status:"success", text:"글 작성자만 수정이 가능합니다."});
+            res.json({status:"fail", text:"글 작성자만 수정이 가능합니다."});
         }
     }catch(e){
         console.log(e);
@@ -256,7 +250,7 @@ var editpost_multiphoto = async function(req,res){
 
         }
         else{
-            res.json({status:"success", text:"글 작성자만 수정이 가능합니다."});
+            res.json({status:"fail", text:"글 작성자만 수정이 가능합니다."});
 
         }
         
@@ -283,7 +277,7 @@ var delpost = async function(req,res){
 
         }
         else{
-            res.json({status:"success", text:"글 작성자만 삭제가 가능합니다.."});
+            res.json({status:"fail", text:"글 작성자만 삭제가 가능합니다.."});
 
         }
 
