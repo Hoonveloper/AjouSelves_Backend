@@ -157,7 +157,7 @@ router.get("/create", verifyToken, (req, res) => {
         const create_proj = result.map((v) => v.projid);
         console.log(create_proj);
         DB.query(
-          `select title from projs where projid in (${create_proj})`,
+          `select projid,title from projs where projid in (${create_proj})`,
           (err, result, fields) => {
             if (err) {
               console.log("title을 불러오는 error 발생");
@@ -191,10 +191,11 @@ router.get("/join-detail", verifyToken, (req, res) => {
       } else {
         const create_proj = result.map((v) => v.projid);
         DB.query(
-          `select *from projs where projid in (${create_proj})`,
+          //`select *from projs where projid in (${create_proj})`,
+          `SELECT p.projid,p.title, p.state,p.category, p.created_at, u.userid, u.nickname,u.profilelink ,p.min_num,p.cur_num,p.explained, ph.url FROM projs as p join users as u ON p.userid=u.userid LEFT JOIN photos as ph ON ph.projid=p.projid AND ph.thumbnail =1 WHERE p.projid IN (${create_proj})`,
           (err, result, fields) => {
             if (err) {
-              console.log("detail을 불러오는 중 error 발생");
+              console.log("detail을 불러오는 중 error 발생" + err);
               res
                 .status(400)
                 .json({ text: "ErrorCode:400, 잘못된 요청입니다." });
@@ -225,10 +226,11 @@ router.get("/create-detail", verifyToken, (req, res) => {
       } else {
         const create_proj = result.map((v) => v.projid);
         DB.query(
-          `select *from projs where projid in (${create_proj})`,
+          //`select *from projs where projid in (${create_proj})`,
+          `SELECT p.projid,p.title, p.state,p.category, p.created_at, u.userid, u.nickname,u.profilelink ,p.min_num,p.cur_num,p.explained, ph.url FROM projs as p join users as u ON p.userid=u.userid LEFT JOIN photos as ph ON ph.projid=p.projid AND ph.thumbnail =1 WHERE p.projid IN (${create_proj})`,
           (err, result, fields) => {
             if (err) {
-              console.log("detail을 불러오는 중 error 발생");
+              console.log("detail을 불러오는 중 error 발생" + err);
               res
                 .status(400)
                 .json({ text: "ErrorCode:400, 잘못된 요청입니다." });
