@@ -83,7 +83,8 @@ var getALLpost= async function(req,res){
     */
 
     try{
-        const [data] = await db.promise().query(`SELECT p.title, p.explained, p.created_at, u.userid, u.nickname, ph.url FROM posts as p INNER JOIN users as u ON p.userid=u.userid LEFT JOIN photos as ph ON ph.postid=p.postid where thumbnail=1 ORDER BY p.created_at DESC`);
+        const [data] = await db.promise().query(`SELECT p.projid,p.title, p.state,p.category, p.created_at, u.userid, u.nickname ,p.min_num,p.cur_num,p.explained, ph.url FROM projs as p join users as u ON p.userid=u.userid LEFT JOIN photos as ph ON ph.projid=p.projid AND ph.thumbnail =1 ORDER BY created_at DESC;`);
+       
         //console.log(data);
         res.json({status:"success",data});
 
@@ -300,10 +301,8 @@ router.post("/search",searchpostbytitle);
 router.get("/all",getALLpost);
 router.get("/:id",verifyToken,getpost);
 router.put("/edit/:id",verifyToken,editpost_nophoto);
-router.put("/edit/single/:id",verifyToken,upload.single("photo"),editpost_onephoto);
 router.put("/edit/multi/:id",verifyToken,upload.array("photo"),editpost_multiphoto);
 router.delete("/delete/:id",verifyToken,delpost);
 router.post("/add",verifyToken,addpost_nophoto); //사진 없을 때
-router.post("/add/single",verifyToken,upload.single("photo"),addpost_onephoto); //사진 1개
 router.post("/add/multi",verifyToken,upload.array("photo"),addpost_multiphoto); //사진 2개 이상
 module.exports = router;
