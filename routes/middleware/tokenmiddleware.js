@@ -11,18 +11,17 @@ exports.verifyToken = (req, res, next) => {
     // 인증 실패
     // 유효기간이 초과된 경우
     if (error.name === "TokenExpiredError") {
-      console.log("Token timeout");
       return res.status(419).json({
+        status: "fail",
         code: 419,
-        message: "토큰이 만료되었습니다.",
+        text: "토큰이 만료되었습니다.",
       });
     }
-
     // 토큰의 비밀키가 일치하지 않는 경우
-    console.log("Invalid token");
     return res.status(401).json({
+      status: "fail",
       code: 401,
-      message: "유효하지 않은 토큰입니다.",
+      text: "유효하지 않은 토큰입니다.",
     });
   }
 };
