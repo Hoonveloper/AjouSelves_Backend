@@ -21,14 +21,19 @@ exports.verifypassword = async (req, res, next) => {
       crypto.pbkdf2Sync(pw, db_salt, 9999, 64, "sha512").toString("base64"),
     ];
     if (req_pw == db_pw) {
-      console.log("비밀번호 일치");
       next();
     } else {
-      console.log("비밀번호가 일치하지 않습니다.");
-      res.json({ status: "fail" });
+      res
+        .status(400)
+        .json({ status: "fail", text: "비밀번호가 일치하지 않습니다." });
     }
   } catch (e) {
-    console.log("Password verify error");
-    res.status(400).json({ text: "ErrorCode:400, 잘못된 요청입니다." });
+    res
+      .status(400)
+      .json({
+        status: "fail",
+        text: "비밀번호 검증에 실패했습니다.",
+        error: e,
+      });
   }
 };

@@ -1,6 +1,5 @@
 const express = require("express");
 const router = express.Router();
-//const crypto = require("crypto"); // 비밀번호 암호화 모듈
 const jwt = require("jsonwebtoken"); // jwt 모듈
 require("dotenv").config(); // jwt secret key value
 
@@ -40,12 +39,14 @@ router.post("/register", async function (req, res) {
   ];
   DB.query(userquery, uservalue, (err, result, fileds) => {
     if (err) {
-      console.log("user register fail");
-      console.log(err);
-      res.status(400).json({ text: "ErrorCode:400, 잘못된 요청입니다." });
+      res
+        .status(400)
+        .json({ status: "fail", text: "회원가입에 실패했습니다.", error: err });
     } else {
-      console.log("user register success");
-      res.status(200).json({ status: "success" });
+      res.status(200).json({
+        status: "success",
+        text: "정상적으로 회원가입에 성공했습니다.",
+      });
     }
   });
 });
@@ -64,15 +65,17 @@ router.post("/email", async function (req, res) {
     const [data] = await DB.promise().query(
       `select email from users where email = '${email}'`
     );
-    console.log(data);
     if (Object.keys(data).length === 0) {
       //이메일 verification 코드
       const result = await smtpTransport.sendMail(
         mailoptions,
         (error, response) => {
           if (error) {
-            console.log(error);
-            return res.status(400).send({ status: "이메일 오류" });
+            return res.status(400).send({
+              status: "fail",
+              text: "이메일 인증 실패 ",
+              error: error,
+            });
           } else {
             /* 클라이언트에게 인증 번호를 보내서 사용자가 맞게 입력하는지 확인! */
             return res.status(200).send({
@@ -85,13 +88,16 @@ router.post("/email", async function (req, res) {
     } else {
       //이미 존재하는 유저.
       res.status(400).json({
-        status: "email duplicate",
-        text: "이메일이 중복됩니다. 다른 이메일을 입력해주세요",
+        status: "fail",
+        text: "이메일이 중복됩니다.",
       });
     }
   } catch (e) {
-    console.log(e);
-    res.status(400).json({ text: "ErrorCode:400, 잘못된 요청입니다." });
+    res.status(400).json({
+      status: "fail",
+      text: "ErrorCode:400, 잘못된 요청입니다.",
+      error: e,
+    });
   }
 });
 
@@ -103,7 +109,8 @@ router.post("/email", async function (req, res) {
 */
 
 router.post("/login", verifypassword, async (req, res) => {
-  const { email, password } = req.body;
+  const email = req.body.email;
+  const time = new Date(Math.floor(Date.now()));
   try {
     const [data] = await DB.promise().query(
       `select userid from users where email=?`,
@@ -114,35 +121,39 @@ router.post("/login", verifypassword, async (req, res) => {
     const token = jwt.sign(
       {
         _id: user_id,
-        _email:email
+        _email: email,
+        _exp: new Date(time.setHours(time.getHours() + 12)),
       },
       process.env.JWT_SECRET,
       {
-        expiresIn: "1h",
-        issuer: "AjouSelves_Back",
+        expiresIn: "3h",
+        issuer: "AjouSelves",
       }
     );
-
-    console.log("Login success");
     res.status(200).json({
-      code: 200,
-      message: "토큰이 발급되었습니다.",
+      status: "success",
+      text: "토큰이 발급되었습니다.",
+      exp: new Date(time),
       token: token,
     });
   } catch (e) {
-    console.log("login error");
-    res.status(400).json({ text: "ErrorCode:400, 잘못된 요청입니다." });
+    res
+      .status(400)
+      .json({ status: "fail", text: "로그인에 실패했습니다.", error: e });
   }
 });
 
 router.get("/token-test", verifyToken, (req, res) => {
-  const user_id = req.decoded._id;
-  console.log("Token is ok");
+  const userid = req.decoded._id;
+  const email = req.decoded._email;
+  const exp = req.decoded._exp;
   res.status(200).json({
-    code: 200,
-    message: "토큰은 정상입니다.",
+    status: "success",
+    text: "정상 작동하는 토큰입니다.",
     data: {
-      _id: user_id,
+      _id: userid,
+      _email: email,
+      _exp: exp,
     },
   });
 });
