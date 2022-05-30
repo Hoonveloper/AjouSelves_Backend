@@ -632,18 +632,19 @@ const add_pay_photo = async function(req,res){
 router.post("/searchbytitle", searchprojbytitle);
 router.get("/", getALLproj);
 router.get("/:id", getproj);
-router.put("/edit/:id",verifyToken, editproj_nophoto);
-router.put("/edit_multi/:id",verifyToken, upload.array("photo"), editproj_multiphoto);
-router.put("/edit_state/:id",verifyToken,edit_state );
-router.delete("/delete/:id",verifyToken, delproj);
-router.post("/add",verifyToken, addproj_nophoto);
-router.post("/add_photo",verifyToken, upload.array("photo"), addproj_multiphoto);
+router.put("/:id",verifyToken, editproj_nophoto);
+router.put("/photo/:id",verifyToken, upload.array("photo"), editproj_multiphoto);
+router.put("/state/:id",verifyToken,edit_state );
+router.delete("/:id",verifyToken, delproj);
+router.post("/",verifyToken, addproj_nophoto);
+router.post("/photo",verifyToken, upload.array("photo"), addproj_multiphoto);
 router.get("/join/:id", verifyToken,join);
 router.get("/leave/:id", verifyToken,leave);
 router.get("/pay/qr/:id",verifyToken,pay_qr);
-router.post("/pay/qr/add/:id",verifyToken,upload_qr.array("photo"),add_qr);
+router.post("/pay/qr/:id",verifyToken,upload_qr.array("photo"),add_qr);
+router.put("/pay/qr/:id",verifyToken,upload_qr.array("photo"),edit_pay_qr);
 
-router.put("/pay/qr/edit/:id",verifyToken,upload_qr.array("photo"),edit_pay_qr);
+
 
 /*
 * 아임포트 연동 api 구현 완료. 그러나 FE/APP 미구현 사항으로 인한 주석처리

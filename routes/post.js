@@ -44,18 +44,19 @@ var getpost= async function(req,res){
     디테일한 post 정보 가져오는 코드 (댓글 포함)
 
     */
+    const postid= req.params.id;
     const id = req.decoded._id;
     try{
-        const [post]= await db.promise().query(`SELECT p.postid, u.nickname, p.title,p.explained, p.created_at FROM posts AS p JOIN users AS u ON p.userid=u.userid WHERE p.postid=${id};`);
-        const [photos]= await db.promise().query(`SELECT * FROM photos WHERE postid=${id} ORDER BY thumbnail desc;`);
-    
+        const [post]= await db.promise().query(`SELECT p.postid, u.nickname, p.title,p.explained, p.created_at FROM posts AS p JOIN users AS u ON p.userid=u.userid WHERE p.postid=${postid};`);
+        const [photos]= await db.promise().query(`SELECT * FROM photos WHERE postid=${postid} ORDER BY thumbnail desc;`);
+        console.log[photos];
         post[0].photos= new Array();
         photos.forEach((photo)=>{
             post[0].photos.push(photo.url);
 
         })
         console.log(post[0].title);
-        const [comments]= await db.promise().query(`SELECT * FROM comments WHERE postid=${id}`);
+        const [comments]= await db.promise().query(`SELECT * FROM comments WHERE postid=${postid}`);
         comments.map((e)=> {
             var temp= new Object();
             temp.postid=e.postid;
@@ -81,10 +82,12 @@ var getALLpost= async function(req,res){
     SELECT * FROM posts ORDER BY created_ at (desc) -> 최신순
     SELECT * FROM posts ORDER BY created_ at (desc) -> 오래된순
     */
+
     try{
         const [data] = await db.promise().query(`SELECT p.postid,p.title, p.explained, p.created_at, u.userid, u.nickname , ph.url FROM posts as p join users as u ON p.userid=u.userid LEFT JOIN photos as ph ON ph.postid=p.postid AND ph.thumbnail =1 ORDER BY created_at DESC;`);
        
-        res.json(data);
+        //console.log(data);
+        res.json({status:"success",data});
 
 
     }catch(e){
@@ -159,10 +162,14 @@ const addpost_multiphoto=async function(req,res){
       
         photos.forEach( async(photo,idx)=> {
             const photo_url=`/photo/${photo.filename}`;
+            console.log(photo_url);
             const [photo_data]= await db.promise().query(`INSERT INTO photos (postid,projid,url) VALUES(${insertid},NULL,'${photo_url}');`);
             if(idx==0){ // 첫번째 사진을 Thumbnail 이미지로 변경.
                 await db.promise().query(`UPDATE photos SET thumbnail=1 WHERE url='${photo_url}';`);
             }
+            
+           
+        
         })
         
         
@@ -188,7 +195,7 @@ var editpost_nophoto= async function(req,res){
             res.json({status:"success",text:"글 수정이 완료되었습니다."});
         }
         else{
-            res.json({status:"fail", text:"글 작성자만 수정이 가능합니다."});
+            res.json({status:"success", text:"글 작성자만 수정이 가능합니다."});
         }
         
 
@@ -218,7 +225,7 @@ var editpost_onephoto = async function (req,res){
             res.json({status:"success",text:"글 수정이 완료되었습니다."});
         }
         else{
-            res.json({status:"fail", text:"글 작성자만 수정이 가능합니다."});
+            res.json({status:"success", text:"글 작성자만 수정이 가능합니다."});
         }
     }catch(e){
         console.log(e);
@@ -250,7 +257,7 @@ var editpost_multiphoto = async function(req,res){
 
         }
         else{
-            res.json({status:"fail", text:"글 작성자만 수정이 가능합니다."});
+            res.json({status:"success", text:"글 작성자만 수정이 가능합니다."});
 
         }
         
@@ -277,7 +284,7 @@ var delpost = async function(req,res){
 
         }
         else{
-            res.json({status:"fail", text:"글 작성자만 삭제가 가능합니다.."});
+            res.json({status:"success", text:"글 작성자만 삭제가 가능합니다.."});
 
         }
 
@@ -292,11 +299,11 @@ var delpost = async function(req,res){
 
 
 router.post("/search",searchpostbytitle);
-router.get("/all",getALLpost);
+router.get("/",getALLpost);
 router.get("/:id",verifyToken,getpost);
-router.put("/edit/:id",verifyToken,editpost_nophoto);
-router.put("/edit/multi/:id",verifyToken,upload.array("photo"),editpost_multiphoto);
-router.delete("/delete/:id",verifyToken,delpost);
-router.post("/add",verifyToken,addpost_nophoto); //사진 없을 때
-router.post("/add/multi",verifyToken,upload.array("photo"),addpost_multiphoto); //사진 2개 이상
+router.put("/:id",verifyToken,editpost_nophoto);
+router.put("/photo/:id",verifyToken,upload.array("photo"),editpost_multiphoto);
+router.delete("/:id",verifyToken,delpost);
+router.post("/",verifyToken,addpost_nophoto); //사진 없을 때
+router.post("/photo",verifyToken,upload.array("photo"),addpost_multiphoto); //사진 2개 이상
 module.exports = router;
