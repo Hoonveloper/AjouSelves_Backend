@@ -1,4 +1,5 @@
-[![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2FHoonveloper%2FAjouSelves_Backend&count_bg=%234A4B49&title_bg=%23000000&icon=&icon_color=%23DDCDCD&title=hits&edge_flat=false)](https://hits.seeyoufarm.com)
+<div align="center">
+  [![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2FHoonveloper%2FAjouSelves_Backend&count_bg=%234A4B49&title_bg=%23000000&icon=&icon_color=%23DDCDCD&title=hits&edge_flat=false)](https://hits.seeyoufarm.com)
 
  [굿즈바이어스 사이트 바로가기](http://goodsbyus.com/)
 
@@ -97,3 +98,6 @@ API 사용은 위의 API 명세서를 확인 부탁드립니다.
 ![GitHub](https://img.shields.io/badge/github-%23121011.svg?style=for-the-badge&logo=github&logoColor=white)
 ![AWS](https://img.shields.io/badge/AWS-%23FF9900.svg?style=for-the-badge&logo=amazon-aws&logoColor=white)
 ![Nginx](https://img.shields.io/badge/nginx-%23009639.svg?style=for-the-badge&logo=nginx&logoColor=white)
+
+</div>
+
