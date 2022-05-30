@@ -14,6 +14,11 @@
 
 [User API 명세서.pdf](https://drive.google.com/file/d/1wAZX-9HrePY-2qGC8ohEaoegE5aiPoQm/view?usp=sharing)
 
+
+## ER DIAGRAM
+
+![GBU_DB](https://user-images.githubusercontent.com/77804950/171029169-d166ea0a-5976-4fc9-8ba3-b3f6af0fd6d2.png)
+
 ## initial setting
 
 ### Create a config folder
