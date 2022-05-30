@@ -642,7 +642,6 @@ router.get("/join/:id", verifyToken,join);
 router.get("/leave/:id", verifyToken,leave);
 router.get("/pay/qr/:id",verifyToken,pay_qr);
 router.post("/pay/qr/:id",verifyToken,upload_qr.array("photo"),add_qr);
-
 router.put("/pay/qr/:id",verifyToken,upload_qr.array("photo"),edit_pay_qr);
 
 
