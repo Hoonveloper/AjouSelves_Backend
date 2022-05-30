@@ -1,6 +1,6 @@
 [![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2FHoonveloper%2FAjouSelves_Backend&count_bg=%234A4B49&title_bg=%23000000&icon=&icon_color=%23DDCDCD&title=hits&edge_flat=false)](https://hits.seeyoufarm.com)
 
-굿즈바이어스 사이트는 [여기](goodsbyus.com)를 클릭해주세요
+ [굿즈바이어스 사이트 바로가기](http://goodsbyus.com/)
 
 # Goods By Us 
 [22-1] 파란학기제
