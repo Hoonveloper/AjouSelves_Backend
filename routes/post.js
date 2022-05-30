@@ -292,11 +292,11 @@ var delpost = async function(req,res){
 
 
 router.post("/search",searchpostbytitle);
-router.get("/all",getALLpost);
+router.get("/",getALLpost);
 router.get("/:id",verifyToken,getpost);
 router.put("/edit/:id",verifyToken,editpost_nophoto);
-router.put("/edit/multi/:id",verifyToken,upload.array("photo"),editpost_multiphoto);
+router.put("/edit_photo/:id",verifyToken,upload.array("photo"),editpost_multiphoto);
 router.delete("/delete/:id",verifyToken,delpost);
 router.post("/add",verifyToken,addpost_nophoto); //사진 없을 때
-router.post("/add/multi",verifyToken,upload.array("photo"),addpost_multiphoto); //사진 2개 이상
+router.post("/add_photo",verifyToken,upload.array("photo"),addpost_multiphoto); //사진 2개 이상
 module.exports = router;

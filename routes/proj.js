@@ -633,7 +633,7 @@ router.post("/searchbytitle", searchprojbytitle);
 router.get("/", getALLproj);
 router.get("/:id", getproj);
 router.put("/edit/:id",verifyToken, editproj_nophoto);
-router.put("/edit_multi/:id",verifyToken, upload.array("photo"), editproj_multiphoto);
+router.put("/edit_photo/:id",verifyToken, upload.array("photo"), editproj_multiphoto);
 router.put("/edit_state/:id",verifyToken,edit_state );
 router.delete("/delete/:id",verifyToken, delproj);
 router.post("/add",verifyToken, addproj_nophoto);
