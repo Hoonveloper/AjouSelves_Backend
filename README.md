@@ -10,7 +10,7 @@
 ## 서비스 소개
 굿즈바이어스는, 아주대 학생들의 소속감, 유대감 증진을 위한 **아주대학교 굿즈 제작 클라우드 펀딩 플랫폼**입니다.
 
-보다 쉬운 접근성을 위해 안드로이드 및 iOS 환경에 맞는 어플과및 웹사이트를 개발하였습니다.
+보다 쉬운 접근성을 위해 안드로이드 및 iOS 환경에 맞는 어플과 웹사이트를 개발하였습니다.
 
 [Goods By Us : 굿즈바이어스]: goodsbyus.com
 
@@ -25,10 +25,6 @@
 
 <img src="https://user-images.githubusercontent.com/77804950/171029849-194d2303-50da-42de-86bb-dbc034449230.jpg"  width="50%" height="50%"/>
 
-
-![응용이미지_02](){: width="50%" height="50%"}
-![응용이미지_03](){: width="50%" height="50%"}
-![응용이미지_서비스컷](){: width="50%" height="50%"}
 
 
 
@@ -47,7 +43,9 @@
 
 ## ER DIAGRAM
 
-![GBU_DB](https://user-images.githubusercontent.com/77804950/171029169-d166ea0a-5976-4fc9-8ba3-b3f6af0fd6d2.png){: width="80%" height="80%"}
+
+<img src="https://user-images.githubusercontent.com/77804950/171029169-d166ea0a-5976-4fc9-8ba3-b3f6af0fd6d2.png"  width="80%" height="80%"/>
+
 
 ## initial setting
 
