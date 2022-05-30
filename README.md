@@ -1,6 +1,5 @@
 <div align="center">
-![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2FHoonveloper%2FAjouSelves_Backend&count_bg=%234A4B49&title_bg=%23000000&icon=&icon_color=%23DDCDCD&title=hits&edge_flat=false)](https://hits.seeyoufarm.com)
-
+[![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2FAjouSelves%2FAjouSelves_Backend&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false)](https://hits.seeyoufarm.com)
  [굿즈바이어스 사이트 바로가기](http://goodsbyus.com/)
 
 # Goods By Us 
