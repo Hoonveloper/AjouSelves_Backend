@@ -19,7 +19,7 @@ router.post("/register", async function (req, res) {
   const body = req.body;
   const encryption = authmiddleware.createHashedPassword(req.body.password);
   const userquery =
-    "insert into users (email, password, salt, name, phonenumber, nickname, status, socialtype, sex, birth, address, account, profilelink) values (?,?,?,?,?,?,?,?,?,?,?,?,?)";
+    "insert into users (email, password, salt, name, phonenumber, nickname, status, sex, birth, address, account) values (?,?,?,?,?,?,?,?,?,?,?)";
   const salt = encryption[1];
   const password = encryption[0];
   const uservalue = [
@@ -30,12 +30,12 @@ router.post("/register", async function (req, res) {
     body.phonenumber,
     body.nickname,
     body.status,
-    body.socialtype,
+   
     body.sex,
     body.birth,
     body.address,
     body.account,
-    body.profilelink,
+    
   ];
   DB.query(userquery, uservalue, (err, result, fileds) => {
     if (err) {

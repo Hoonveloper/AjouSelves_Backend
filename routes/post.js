@@ -55,8 +55,9 @@ var getpost= async function(req,res){
             post[0].photos.push(photo.url);
 
         })
-        console.log(post[0].title);
+       ///= console.log(post[0].title);
         const [comments]= await db.promise().query(`SELECT * FROM comments WHERE postid=${postid}`);
+        console.log(comments);
         comments.map((e)=> {
             var temp= new Object();
             temp.postid=e.postid;
@@ -66,6 +67,7 @@ var getpost= async function(req,res){
             temp.nickname=e.nickname;
             temp = JSON.stringify(temp);
             post.push(JSON.parse(temp));
+            console.log(temp);
         })
         console.log(post);
         res.send({status:"success",post});
