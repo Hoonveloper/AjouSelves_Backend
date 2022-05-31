@@ -6,10 +6,13 @@ const { verifyToken } = require("./middleware/tokenmiddleware");
 db.connect();
 
 const addComment = async function(req,res){
-    const projid= req.params.projid || "NULL";
-    const postid = req.params.postid || "NULL";
+    const projid= req.body.projid || "NULL";
+    const postid = req.body.postid || "NULL";
     const userid= req.decoded._id;
     const comment= req.body.comment;
+    console.log(projid);
+    console.log(postid);
+
     if (!comment){
         console.log("zz");
         res.status(400).json({status:"fail",text:"댓글을 입력해주세요"});
@@ -74,7 +77,7 @@ const deleteComment= async function(req,res){
 
 }
 
-router.post('/add',verifyToken,addComment);
-router.put('/edit/:id' ,verifyToken, editComment);
-router.delete('/delete/:id',verifyToken,deleteComment);
+router.post('/',verifyToken,addComment);
+router.put('/:id' ,verifyToken, editComment);
+router.delete('/:id',verifyToken,deleteComment);
 module.exports=router;
