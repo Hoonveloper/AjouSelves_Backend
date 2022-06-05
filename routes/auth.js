@@ -158,4 +158,36 @@ router.get("/token-test", verifyToken, (req, res) => {
   });
 });
 
+router.get("/pass-verify", verifyToken ,async(req,res) => {
+  const email = req.decoded._email;
+  const pw = req.body.password;
+
+  try {
+    const [data] = await DB.promise().query(
+      `select salt, password from users where email = ?`,
+      email
+    );
+    const db_salt = data[0].salt;
+    const db_pw = data[0].password;
+    const req_pw = [
+      crypto.pbkdf2Sync(pw, db_salt, 9999, 64, "sha512").toString("base64"),
+    ];
+    if (req_pw == db_pw) res.status(200).json({ status: "succes", text: "비밀번호 검증에 성공했습니다." });
+    else {
+      res
+        .status(400)
+        .json({ status: "fail", text: "비밀번호가 일치하지 않습니다." });
+    }
+  } catch (e) {
+    res
+      .status(400)
+      .json({
+        status: "fail",
+        text: "비밀번호 검증에 실패했습니다.",
+        error: e,
+      });
+  }
+
+})
+
 module.exports = router;

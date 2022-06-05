@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const crypto = require("crypto"); // 비밀번호 암호화 모듈
 const { verifyToken } = require("./middleware/tokenmiddleware"); // Token 검증 미들웨어
+const authmiddleware = require("./middleware/authmiddleware");
 
 const DB = require("../database/maria"); // DB 정보 가져오기
 DB.connect(); // DB 연결
@@ -67,16 +68,20 @@ router.delete("/", verifyToken, (req, res) => {
 // 회원정보 수정을 위한 API.
 router.put("/", verifyToken, (req, res) => {
   const userid = req.decoded._id;
+
+  const encryption = authmiddleware.createHashedPassword(req.body.password);
+  const salt = encryption[1];
+  const password = encryption[0];
+
+  const name = req.body.name;
   const phonenumber = req.body.phonenumber;
   const nickname = req.body.nickname;
   const status = req.body.status;
-  const birth = req.body.birth;
   const address = req.body.address;
   const account = req.body.account;
-  const profilelink = req.body.profilelink;
 
   DB.query(
-    `update users set phonenumber = '${phonenumber}', nickname = '${nickname}', status = '${status}', birth = '${birth}', address = '${address}', account = '${account}', profilelink = '${profilelink}' where userid = ?`,
+    `update users set name = '${name}', phonenumber = '${phonenumber}',salt = '${salt}', password = '${password}', nickname = '${nickname}', status = '${status}', address = '${address}', account = '${account}' where userid = ?`,
     userid,
     (err) => {
       if (err) {
