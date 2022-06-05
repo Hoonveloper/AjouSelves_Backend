@@ -158,7 +158,7 @@ router.get("/token-test", verifyToken, (req, res) => {
   });
 });
 
-router.get("/pass-verify", verifyToken ,async(req,res) => {
+router.post("/pass-verify", verifyToken ,async(req,res) => {
   const email = req.decoded._email;
   const pw = req.body.password;
 
