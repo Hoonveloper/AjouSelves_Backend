@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const jwt = require("jsonwebtoken"); // jwt 모듈
 require("dotenv").config(); // jwt secret key value
+const crypto = require("crypto");
 
 const { smtpTransport } = require("../config/email"); // email 인증을 위한 사용자 정보
 const { verifyToken } = require("./middleware/tokenmiddleware"); // Token 검증 미들웨어
@@ -175,7 +176,6 @@ router.post("/pass-verify", verifyToken ,async(req,res) => {
     if (req_pw == db_pw) res.status(200).json({ status: "succes", text: "비밀번호 검증에 성공했습니다." });
     else {
       res
-        .status(400)
         .json({ status: "fail", text: "비밀번호가 일치하지 않습니다." });
     }
   } catch (e) {
