@@ -72,10 +72,11 @@ var getproj = async function (req, res) {
     const [proj] = await db
       .promise()
       .query(
-        `SELECT p.title,p.state,p.category,p.min_num, p.cur_num,p.required, p.explained, p.created_at,p.amount,u.nickname, u.userid,u.profilelink FROM projs AS p INNER JOIN users AS u ON p.userid=u.userid WHERE p.projid=${id};`
+        `SELECT p.title,p.state,p.category,p.min_num, p.cur_num,p.required, p.explained, p.created_at,p.amount,u.nickname, u.userid,u.phonenumber FROM projs AS p INNER JOIN users AS u ON p.userid=u.userid WHERE p.projid=${id};`
       );
     const [join] = await db.promise().query(`select count(*) as cnt FROM participants WHERE projid=${id} AND userid=${userid}`);
     
+
     
     if(join[0].cnt==1 ){
       //참여 한 경우
@@ -122,6 +123,7 @@ var getproj = async function (req, res) {
     });
     proj.push({is_poster:is_poster});
     proj.push({is_joined:is_joined});
+  
     console.log(proj);
     res.send(proj);
   } catch {
