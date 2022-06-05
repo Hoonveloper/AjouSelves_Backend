@@ -74,7 +74,7 @@ var getproj = async function (req, res) {
       .query(
         `SELECT p.title,p.state,p.category,p.min_num, p.cur_num,p.required, p.explained, p.created_at,p.amount,u.nickname, u.userid,u.profilelink FROM projs AS p INNER JOIN users AS u ON p.userid=u.userid WHERE p.projid=${id};`
       );
-    const [join] = await db.promise().query(`select count(*) as cnt FROM participants WHERE post_id=${id} AND student_id=${userid}`);
+    const [join] = await db.promise().query(`select count(*) as cnt FROM participants WHERE projid=${id} AND userid=${userid}`);
     if(proj[0].cnt>0 ){
       //참여 한 경우
       is_joined=1;
