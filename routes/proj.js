@@ -71,7 +71,7 @@ var getproj = async function (req, res) {
     const [proj] = await db
       .promise()
       .query(
-        `SELECT p.title,p.state,p.category,p.min_num, p.cur_num,p.required, p.explained, p.created_at,u.nickname, u.userid,u.profilelink FROM projs AS p INNER JOIN users AS u ON p.userid=u.userid WHERE p.projid=${id};`
+        `SELECT p.title,p.state,p.category,p.min_num, p.cur_num,p.required, p.explained, p.created_at,p.amount,u.nickname, u.userid,u.profilelink FROM projs AS p INNER JOIN users AS u ON p.userid=u.userid WHERE p.projid=${id};`
       );
 
     if( proj[0].userid==userid){
@@ -120,7 +120,7 @@ var getALLproj = async function (req, res) {
     const [data] = await db
       .promise()
       .query(
-        `SELECT p.projid,p.title, p.state,p.category, p.created_at, u.userid, u.nickname,u.profilelink ,p.min_num,p.cur_num,p.explained, ph.url FROM projs as p join users as u ON p.userid=u.userid LEFT JOIN photos as ph ON ph.projid=p.projid AND ph.thumbnail =1 ORDER BY created_at DESC`
+        `SELECT p.projid,p.title, p.state,p.category, p.created_at, u.userid, u.nickname,u.profilelink ,p.amount,p.min_num,p.cur_num,p.explained, ph.url FROM projs as p join users as u ON p.userid=u.userid LEFT JOIN photos as ph ON ph.projid=p.projid AND ph.thumbnail =1 ORDER BY created_at DESC`
       );
     console.log(data);
     res.json(data);
@@ -135,7 +135,7 @@ var getALLproj = async function (req, res) {
 var addproj_nophoto = async function (req, res) {
   //project 정보 db에 저장하는코드
   const userid=req.decoded._id;
-  const {title,explained,min_num,category} = req.body;
+  const {title,explained,min_num,category,amount} = req.body;
   var required=req.body.required;
   required = JSON.stringify(required).replace(/[\']/g, /[\"]/g);
 
@@ -143,7 +143,7 @@ var addproj_nophoto = async function (req, res) {
     const data = await db
       .promise()
       .query(
-        `INSERT INTO projs(userid,title,category,min_num,explained,required) VALUES(${userid},'${title}','${category}',${min_num},'${explained}','${required}' )`
+        `INSERT INTO projs(userid,title,category,min_num,explained,required,amount) VALUES(${userid},'${title}','${category}',${min_num},'${explained}','${required}',${amount} )`
       );
     //console.log(data);
     res.json({ status: "success", text:"글 작성이 완료되었습니다." });
@@ -158,14 +158,14 @@ const addproj_multiphoto = async function (req, res) {
   //project 정보 db에 저장하는코드
   const photos = req.files;
   const userid = req.decoded._id;
-  const {title,explained,min_num,category} = req.body;
+  const {title,explained,min_num,category,amount} = req.body;
   var required=req.body.required;
 
   try {
     const [data] = await db
       .promise()
       .query(
-        `INSERT INTO projs(userid,title,category,min_num,explained,required) VALUES(${userid},'${title}','${category}',${min_num},'${explained}','${required}' )`
+        `INSERT INTO projs(userid,title,category,min_num,explained,required,amount) VALUES(${userid},'${title}','${category}',${min_num},'${explained}','${required}',${amount} )`
       );
     const insertid = data.insertId;
     console.log("파일 여러개 " + photos.length);
@@ -197,7 +197,7 @@ const addproj_multiphoto = async function (req, res) {
 var editproj_nophoto = async function (req, res) {
   const userid = req.decoded._id;
   const projid= req.params.id;
-  const {title,explained,min_num,category} = req.body;
+  const {title,explained,min_num,category,amount} = req.body;
   var required=req.body.required;
   required = JSON.stringify(req.body.required);
   try {
@@ -211,7 +211,7 @@ var editproj_nophoto = async function (req, res) {
       const data = await db
         .promise()
         .query(
-          `UPDATE projs SET title='${title}', explained='${explained}',min_num=${min_num},category='${category}',required='${required}'  WHERE projid=${projid};`
+          `UPDATE projs SET amount=${amount},title='${title}', explained='${explained}',min_num=${min_num},category='${category}',required='${required}'  WHERE projid=${projid};`
         );
       res.json({ text: "success",text:"글 수정이 완료되었습니다." });
     }
@@ -226,7 +226,7 @@ var editproj_multiphoto = async function (req, res) {
   const userid=req.decoded._id;
   const photos = req.files;
   const projid = req.params.id;
-  const {title,explained,min_num,category} = req.body;
+  const {title,explained,min_num,category,amount} = req.body;
   var required=req.body.required;
   required = JSON.stringify(req.body.required);
 
@@ -261,7 +261,7 @@ var editproj_multiphoto = async function (req, res) {
       const data = await db
         .promise()
         .query(
-          `UPDATE projs SET title='${title}', explained='${explained}',min_num='${min_num}',category='${category}',required='${required}'  WHERE projid=${projid};`
+          `UPDATE projs SET amount=${amount},title='${title}', explained='${explained}',min_num='${min_num}',category='${category}',required='${required}'  WHERE projid=${projid};`
         );
       res.json({ status: "success" ,text:"글 수정이 완료되었습니다."});
     }
