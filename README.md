@@ -138,9 +138,9 @@ API 사용은 위의 API 명세서를 확인 부탁드립니다.
 
 [댓글\_API 명세서.pdf](https://mature-girdle-388.notion.site/API-76c8d2718f654d808594535277bbd3c5)
 
-[Auth API 명세서.pdf](https://drive.google.com/file/d/1KzAkBEHVnGETTgUauLKe_tfPUtzPf4A5/view?usp=sharing)
+[Auth API 명세서.pdf](https://sweltering-saxophone-42b.notion.site/Auth-API-60e5303f48af4e23b43d63af5e09a65f)
 
-[User API 명세서.pdf](https://drive.google.com/file/d/1wAZX-9HrePY-2qGC8ohEaoegE5aiPoQm/view?usp=sharing)
+[User API 명세서.pdf](https://sweltering-saxophone-42b.notion.site/User-API-f473d55862894befa310814a0301164a)
 
 <br/>
 <br/>
