@@ -66,13 +66,26 @@ var getproj = async function (req, res) {
   //특정한 project 정보 가져오는 코드
   const id = req.params.id;
   const userid =req.decoded._id;
-  var is_poster=0;
+  let is_poster=0;
+  let is_joined =0;
   try {
     const [proj] = await db
       .promise()
       .query(
         `SELECT p.title,p.state,p.category,p.min_num, p.cur_num,p.required, p.explained, p.created_at,p.amount,u.nickname, u.userid,u.profilelink FROM projs AS p INNER JOIN users AS u ON p.userid=u.userid WHERE p.projid=${id};`
       );
+    const [join] = await db.promise().query(`select count(*) as cnt FROM participants WHERE post_id=${id} AND student_id=${userid}`);
+    if(proj[0].cnt>0 ){
+      //참여 한 경우
+      is_joined=1;
+    } 
+    else{
+      //참여하지 않은경우
+      is_joined=0;
+
+
+    }
+
 
     if( proj[0].userid==userid){
       //글 작성자인 경우
@@ -106,6 +119,7 @@ var getproj = async function (req, res) {
       proj.push(JSON.parse(temp));
     });
     proj.push({is_poster:is_poster});
+    proj.push({is_joined:is_joined});
     console.log(proj);
     res.send(proj);
   } catch {
