@@ -65,13 +65,23 @@ var searchprojbytitle = async function (req, res) {
 var getproj = async function (req, res) {
   //특정한 project 정보 가져오는 코드
   const id = req.params.id;
-
+  const userid =req.decoded._id;
+  var is_poster=0;
   try {
     const [proj] = await db
       .promise()
       .query(
         `SELECT p.title,p.state,p.category,p.min_num, p.cur_num,p.required, p.explained, p.created_at,u.nickname, u.userid,u.profilelink FROM projs AS p INNER JOIN users AS u ON p.userid=u.userid WHERE p.projid=${id};`
       );
+
+    if( proj[0].userid==userid){
+      //글 작성자인 경우
+      is_poster=1;
+    }
+    else{
+      //글 작성자가 아닌 경우
+      is_poster=0;
+    }
     const [photos] = await db
       .promise()
       .query(
@@ -95,6 +105,7 @@ var getproj = async function (req, res) {
       temp = JSON.stringify(temp);
       proj.push(JSON.parse(temp));
     });
+    proj.push({is_poster:is_poster});
     console.log(proj);
     res.send(proj);
   } catch {
@@ -631,7 +642,7 @@ const add_pay_photo = async function(req,res){
 
 router.post("/searchbytitle", searchprojbytitle);
 router.get("/", getALLproj);
-router.get("/:id", getproj);
+router.get("/:id", verifyToken,getproj);
 router.put("/:id",verifyToken, editproj_nophoto);
 router.put("/photo/:id",verifyToken, upload.array("photo"), editproj_multiphoto);
 router.put("/state/:id",verifyToken,edit_state );
