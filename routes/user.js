@@ -20,7 +20,6 @@ router.get("/", verifyToken, (req, res) => {
     (err, result) => {
       if (err) {
         res
-          .status(400)
           .json({ status: "fail", text: "회원정보 가져오기 실패", error: err });
       } else {
         res.status(200).json({ status: "success", data: result });
@@ -35,7 +34,7 @@ router.get("/all", (req, res) => {
     "select email,name,phonenumber,nickname,status,birth,address,account,profilelink from users where userid > 1",
     (err, result) => {
       if (err) {
-        res.status(400).json({
+        res.json({
           status: "fail",
           text: "모든 유저 회원정보 가져오기 실패",
           error: err,
@@ -126,13 +125,13 @@ router.get("/join", verifyToken, (req, res) => {
     userid,
     (err, result) => {
       if (err) {
-        res.status(400).json({
+        res.json({
           status: "fail",
           text: "프로젝트 불러오기 실패",
           error: err,
         });
       } else if (result.length === 0) {
-        res.status(400).json({
+        res.json({
           status: "fail",
           text: "유저가 참가한 프로젝트가 없습니다.",
         });
@@ -142,7 +141,7 @@ router.get("/join", verifyToken, (req, res) => {
           `select projid,title from projs where projid in (${attend_proj})`,
           (err, result) => {
             if (err) {
-              res.status(400).json({
+              res.json({
                 status: "fail",
                 text: "title 불러오기 실패",
                 error: err,
@@ -162,13 +161,13 @@ router.get("/create", verifyToken, (req, res) => {
   const userid = req.decoded._id;
   DB.query(`select projid from projs where userid=?`, userid, (err, result) => {
     if (err) {
-      res.status(400).json({
+      res.json({
         status: "fail",
         text: "프로젝트 불러오기 실패",
         error: err,
       });
     } else if (result.length === 0) {
-      res.status(400).json({
+      res.json({
         status: "fail",
         text: "유저가 생성한 프로젝트가 없습니다.",
       });
@@ -178,7 +177,7 @@ router.get("/create", verifyToken, (req, res) => {
         `select projid,title from projs where projid in (${create_proj})`,
         (err, result) => {
           if (err) {
-            res.status(400).json({
+            res.json({
               status: "fail",
               text: "title 불러오기 실패",
               error: err,
@@ -200,13 +199,13 @@ router.get("/join-detail", verifyToken, (req, res) => {
     userid,
     (err, result) => {
       if (err) {
-        res.status(400).json({
+        res.json({
           status: "fail",
           text: "프로젝트 불러오기 실패",
           error: err,
         });
       } else if (result.length === 0) {
-        res.status(400).json({
+        res.json({
           status: "fail",
           text: "유저가 참가한 프로젝트가 없습니다.",
         });
@@ -216,7 +215,7 @@ router.get("/join-detail", verifyToken, (req, res) => {
           `SELECT p.projid,p.title, p.state,p.category, p.created_at, u.userid, u.nickname,p.amount ,p.min_num,p.cur_num,p.explained, ph.url FROM projs as p join users as u ON p.userid=u.userid LEFT JOIN photos as ph ON ph.projid=p.projid AND ph.thumbnail =1 WHERE p.projid IN (${create_proj})`,
           (err, result) => {
             if (err) {
-              res.status(400).json({
+              res.json({
                 status: "fail",
                 text: "detail 불러오기 실패",
                 error: err,
@@ -236,13 +235,13 @@ router.get("/create-detail", verifyToken, (req, res) => {
   const userid = req.decoded._id;
   DB.query(`select projid from projs where userid=?`, userid, (err, result) => {
     if (err) {
-      res.status(400).json({
+      res.json({
         status: "fail",
         text: "프로젝트 불러오기 실패",
         error: err,
       });
     } else if (result.length === 0) {
-      res.status(400).json({
+      res.json({
         status: "fail",
         text: "유저가 생성한 프로젝트가 없습니다.",
       });
@@ -252,7 +251,7 @@ router.get("/create-detail", verifyToken, (req, res) => {
         `SELECT p.projid,p.title, p.state,p.category, p.created_at, u.userid, u.nickname,p.amount ,p.min_num,p.cur_num,p.explained, ph.url FROM projs as p join users as u ON p.userid=u.userid LEFT JOIN photos as ph ON ph.projid=p.projid AND ph.thumbnail =1 WHERE p.projid IN (${create_proj})`,
         (err, result) => {
           if (err) {
-            res.status(400).json({
+            res.json({
               status: "fail",
               text: "detail 불러오기 실패",
               error: err,

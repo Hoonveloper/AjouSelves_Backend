@@ -41,7 +41,6 @@ router.post("/register", async function (req, res) {
   DB.query(userquery, uservalue, (err, result, fileds) => {
     if (err) {
       res
-        .status(400)
         .json({ status: "fail", text: "회원가입에 실패했습니다.", error: err });
     } else {
       res.status(200).json({
@@ -72,7 +71,7 @@ router.post("/email", async function (req, res) {
         mailoptions,
         (error, response) => {
           if (error) {
-            return res.status(400).send({
+            return res.send({
               status: "fail",
               text: "이메일 인증 실패 ",
               error: error,
@@ -88,13 +87,13 @@ router.post("/email", async function (req, res) {
       );
     } else {
       //이미 존재하는 유저.
-      res.status(400).json({
+      res.json({
         status: "fail",
         text: "이메일이 중복됩니다.",
       });
     }
   } catch (e) {
-    res.status(400).json({
+    res.json({
       status: "fail",
       text: "ErrorCode:400, 잘못된 요청입니다.",
       error: e,
@@ -139,7 +138,6 @@ router.post("/login", verifypassword, async (req, res) => {
     });
   } catch (e) {
     res
-      .status(400)
       .json({ status: "fail", text: "로그인에 실패했습니다.", error: e });
   }
 });
@@ -180,7 +178,6 @@ router.post("/pass-verify", verifyToken ,async(req,res) => {
     }
   } catch (e) {
     res
-      .status(400)
       .json({
         status: "fail",
         text: "비밀번호 검증에 실패했습니다.",
