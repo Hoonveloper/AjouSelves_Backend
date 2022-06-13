@@ -45,30 +45,29 @@
 <br/>
 <br/>
 
-## **최종 결과물**
-❗ 실제 서비스 운영 
+## **❗ 실제 서비스 운영**
+</br>
 
-92명 회원가입
+### 실사용 유저 : 92명
 <br/>
-<img src="https://user-images.githubusercontent.com/77804950/173355155-b0124ea3-0038-4f50-b322-82531de6ae5d.png"  width="400" height="200"/> 
+<img width="409" alt="db" src="https://user-images.githubusercontent.com/83058072/173380905-caff3414-99cd-4dbf-b614-0e7f3eb5e4ad.png">
 <br/>
-<br/>
-
-자체 제작 아주대 굿즈 스티커 130% 펀딩률 기록, 65명 펀딩 참가.
-<br/>
-<br/>
-<img src="https://user-images.githubusercontent.com/77804950/173355286-6ea5f519-643c-4e9c-8573-8476e48e725a.png"  width="220" height="200"/>
-
 <br/>
 
+### 자체 제작 아주대 굿즈 스티커
+### 실제 아주대학교 학생 65명의 펀딩 참여 ( 130% 펀딩 달성 )
+<br/>
+<img width="250" alt="사진" src="https://user-images.githubusercontent.com/83058072/173381097-dd6e7e82-4460-4f9d-a587-16357d003482.png">
 
-❗ 도메인 연동 및 배포
+<br/>
+
+
+### 도메인 연동 및 배포
+<br/>
+<img width="600" alt="검색" src="https://user-images.githubusercontent.com/83058072/173382612-291cba4e-83b0-4015-b470-365e20abdab0.png">
 <br/>
 <br/>
- <img src="https://user-images.githubusercontent.com/77804950/173355455-72b7583d-a533-45b3-a7f2-4319f00d4a1b.png"  width="220" height="200"/>
-<br/>
-<br/>
-<img src="https://user-images.githubusercontent.com/77804950/173357705-c963fd3d-4f81-4a47-8c9d-b8c1aa8e34e3.png"  width="500" height="250"/>
+<img width="600" alt="홈페이지" src="https://user-images.githubusercontent.com/83058072/173382959-a741a83b-c704-4e69-8478-17a24f88733c.png">
 
 
 
@@ -116,65 +115,85 @@
 <br/>
 <br/>
 
-## **initial setting**  
+## **Initial setting**
+### **Create a config folder**
 
-<br/>
-<br/>
-  
 
-### Create a config folder
+<div align="left">
 
 ```
-  > config.js
+                                          > config.js
 
-  module.exports = {
-    server_port : 3000,
-    db_url : 'mariadb://127.0.0.1:3306/local',
-    db_host : '127.0.0.1', (or localhost)
-    db_pw : input your password,
-    db_user : input your user,
-    db_port : 3306,
-    db_name : input your DB_NAME
-  }
+                                            module.exports = {
+                                              server_port : 3000,
+                                              db_url : 'mariadb://127.0.0.1:3306/local',
+                                              db_host : '127.0.0.1', (or localhost)
+                                              db_pw : input your password,
+                                              db_user : input your user,
+                                              db_port : 3306,
+                                              db_name : input your DB_NAME
+                                            }
 
-  > email.js 및 .env파일은 백엔드 팀에게 문의 바람
+                                          > email.js { nodemailer.createTransport }
+
+                                          > .env     { Jwt Secret Key }
 
 ```
+</div>
+
 <br/>
 
 ---
 
 <br/>
 
-## usage
+## **Installation**
+
+<div align="left">
 
 ```
-> url = http://goodsbyus.com
-> API 사용 = http://goodsbyus.com/api/~
-
-cd AjouSelves_Backend
-yarn install
-yarn start or pm2 start app.js
-
-API 사용은 위의 API 명세서를 확인 부탁드립니다.
+                                          yarn install
+                                          yarn start || pm2 start app.js
 
 ```
+
+</div>
+
 <br/>
 <br/>
 
 ---
 <br/>
+
+
+
+## **Usage**
+
+<div align="left">
+
+```
+                                          > url = https://goodsbyus.com
+                                          > API = https://goodsbyus.com/api/
+
+                                          > API 사용은 명세서 확인을 부탁드립니다.
+```
+
 <br/>
+<br/>
+
+</div>
+
+---
 
 ## API 명세서
 <br/>
 <br/>
 
-[굿즈 프로젝트 API 명세서.pdf](https://mature-girdle-388.notion.site/API-0dc639a485dc424ca8db2b4e807761f3)
+[굿즈 API 명세서.pdf](https://mature-girdle-388.notion.site/API-0dc639a485dc424ca8db2b4e807761f3)
 
-[커뮤니티 게시글 API 명세서.pdf](https://mature-girdle-388.notion.site/41c6e62d7bfa46c5a3eeba0412bb5b7f)
+[커뮤니티 API 명세서.pdf](https://mature-girdle-388.notion.site/41c6e62d7bfa46c5a3eeba0412bb5b7f)
 
-[댓글\_API 명세서.pdf](https://mature-girdle-388.notion.site/API-76c8d2718f654d808594535277bbd3c5)
+[댓글 API 명세서.pdf](https://mature-girdle-388.notion.site/API-76c8d2718f654d808594535277bbd3c5)
 
 [Auth API 명세서.pdf](https://sweltering-saxophone-42b.notion.site/Auth-API-60e5303f48af4e23b43d63af5e09a65f)
 
