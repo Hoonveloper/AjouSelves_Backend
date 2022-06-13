@@ -45,6 +45,44 @@
 <br/>
 <br/>
 
+## **최종 결과물**
+❗ 실제 서비스 운영 
+
+92명 회원가입
+<br/>
+<img src="https://user-images.githubusercontent.com/77804950/173355155-b0124ea3-0038-4f50-b322-82531de6ae5d.png"  width="400" height="200"/> 
+<br/>
+<br/>
+
+자체 제작 아주대 굿즈 스티커 130% 펀딩률 기록, 65명 펀딩 참가.
+<br/>
+<br/>
+<img src="https://user-images.githubusercontent.com/77804950/173355286-6ea5f519-643c-4e9c-8573-8476e48e725a.png"  width="220" height="200"/>
+
+<br/>
+
+
+❗ 도메인 연동 및 배포
+<br/>
+<br/>
+ <img src="https://user-images.githubusercontent.com/77804950/173355455-72b7583d-a533-45b3-a7f2-4319f00d4a1b.png"  width="220" height="200"/>
+<br/>
+<br/>
+<img src="https://user-images.githubusercontent.com/77804950/173357705-c963fd3d-4f81-4a47-8c9d-b8c1aa8e34e3.png"  width="500" height="250"/>
+
+
+
+<br/>
+<br/>
+
+
+
+
+---
+
+<br/>
+<br/>
+
 
 ## **굿즈바이어스 로고**  
 <br/>
