@@ -122,21 +122,21 @@
 <div align="left">
 
 ```
-                                          > config.js
+                               > config.js
 
-                                            module.exports = {
-                                              server_port : 3000,
-                                              db_url : 'mariadb://127.0.0.1:3306/local',
-                                              db_host : '127.0.0.1', (or localhost)
-                                              db_pw : input your password,
-                                              db_user : input your user,
-                                              db_port : 3306,
-                                              db_name : input your DB_NAME
-                                            }
+                                 module.exports = {
+                                   server_port : 3000,
+                                   db_url : 'mariadb://127.0.0.1:3306/local',
+                                   db_host : '127.0.0.1', (or localhost)
+                                   db_pw : input your password,
+                                   db_user : input your user,
+                                   db_port : 3306,
+                                   db_name : input your DB_NAME
+                                 }
 
-                                          > email.js { nodemailer.createTransport }
+                               > email.js { nodemailer.createTransport }
 
-                                          > .env     { Jwt Secret Key }
+                               > .env     { Jwt Secret Key }
 
 ```
 </div>
@@ -152,8 +152,8 @@
 <div align="left">
 
 ```
-                                          yarn install
-                                          yarn start || pm2 start app.js
+                               yarn install
+                               yarn start || pm2 start app.js
 
 ```
 
@@ -172,10 +172,10 @@
 <div align="left">
 
 ```
-                                          > url = https://goodsbyus.com
-                                          > API = https://goodsbyus.com/api/
+                               > url = https://goodsbyus.com
+                               > API = https://goodsbyus.com/api/
 
-                                          > API 사용은 명세서 확인을 부탁드립니다.
+                               > API 사용은 명세서 확인을 부탁드립니다.
 ```
 
 <br/>
